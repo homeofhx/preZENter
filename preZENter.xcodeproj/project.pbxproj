@@ -1,0 +1,350 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		CE350DF62E21D79C00EC2F36 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE350DF52E21D79C00EC2F36 /* AppDelegate.swift */; };
+		CE350DF82E21D79E00EC2F36 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE350DF72E21D79E00EC2F36 /* Assets.xcassets */; };
+		CE350DFB2E21D79E00EC2F36 /* CtrlPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = CE350DF92E21D79E00EC2F36 /* CtrlPanel.xib */; };
+		CE350E042E223B2600EC2F36 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = CE350E032E223B2600EC2F36 /* Credits.rtf */; };
+		CE350E062E223B7500EC2F36 /* LiveWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE350E052E223B7500EC2F36 /* LiveWindow.swift */; };
+		CE350E082E223BB700EC2F36 /* VideoCaptureDevs.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE350E072E223BB700EC2F36 /* VideoCaptureDevs.swift */; };
+		CE350E0A2E223BCD00EC2F36 /* Windows.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE350E092E223BCD00EC2F36 /* Windows.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		CE350DF22E21D79C00EC2F36 /* preZENter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = preZENter.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CE350DF52E21D79C00EC2F36 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		CE350DF72E21D79E00EC2F36 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		CE350DFA2E21D79E00EC2F36 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/CtrlPanel.xib; sourceTree = "<group>"; };
+		CE350DFC2E21D79E00EC2F36 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		CE350DFD2E21D79E00EC2F36 /* preZENter.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = preZENter.entitlements; sourceTree = "<group>"; };
+		CE350E032E223B2600EC2F36 /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
+		CE350E052E223B7500EC2F36 /* LiveWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveWindow.swift; sourceTree = "<group>"; };
+		CE350E072E223BB700EC2F36 /* VideoCaptureDevs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCaptureDevs.swift; sourceTree = "<group>"; };
+		CE350E092E223BCD00EC2F36 /* Windows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Windows.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		CE350DEF2E21D79C00EC2F36 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		CE350DE92E21D79C00EC2F36 = {
+			isa = PBXGroup;
+			children = (
+				CE350DF42E21D79C00EC2F36 /* preZENter */,
+				CE350DF32E21D79C00EC2F36 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		CE350DF32E21D79C00EC2F36 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				CE350DF22E21D79C00EC2F36 /* preZENter.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		CE350DF42E21D79C00EC2F36 /* preZENter */ = {
+			isa = PBXGroup;
+			children = (
+				CE350DF52E21D79C00EC2F36 /* AppDelegate.swift */,
+				CE350DF72E21D79E00EC2F36 /* Assets.xcassets */,
+				CE350DF92E21D79E00EC2F36 /* CtrlPanel.xib */,
+				CE350DFC2E21D79E00EC2F36 /* Info.plist */,
+				CE350DFD2E21D79E00EC2F36 /* preZENter.entitlements */,
+				CE350E032E223B2600EC2F36 /* Credits.rtf */,
+				CE350E052E223B7500EC2F36 /* LiveWindow.swift */,
+				CE350E072E223BB700EC2F36 /* VideoCaptureDevs.swift */,
+				CE350E092E223BCD00EC2F36 /* Windows.swift */,
+			);
+			path = preZENter;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		CE350DF12E21D79C00EC2F36 /* preZENter */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CE350E002E21D79E00EC2F36 /* Build configuration list for PBXNativeTarget "preZENter" */;
+			buildPhases = (
+				CE350DEE2E21D79C00EC2F36 /* Sources */,
+				CE350DEF2E21D79C00EC2F36 /* Frameworks */,
+				CE350DF02E21D79C00EC2F36 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = preZENter;
+			productName = preZENter;
+			productReference = CE350DF22E21D79C00EC2F36 /* preZENter.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		CE350DEA2E21D79C00EC2F36 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1010;
+				LastUpgradeCheck = 1010;
+				TargetAttributes = {
+					CE350DF12E21D79C00EC2F36 = {
+						CreatedOnToolsVersion = 10.1;
+						SystemCapabilities = {
+							com.apple.Sandbox = {
+								enabled = 1;
+							};
+						};
+					};
+				};
+			};
+			buildConfigurationList = CE350DED2E21D79C00EC2F36 /* Build configuration list for PBXProject "preZENter" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = CE350DE92E21D79C00EC2F36;
+			productRefGroup = CE350DF32E21D79C00EC2F36 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				CE350DF12E21D79C00EC2F36 /* preZENter */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		CE350DF02E21D79C00EC2F36 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CE350DF82E21D79E00EC2F36 /* Assets.xcassets in Resources */,
+				CE350E042E223B2600EC2F36 /* Credits.rtf in Resources */,
+				CE350DFB2E21D79E00EC2F36 /* CtrlPanel.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		CE350DEE2E21D79C00EC2F36 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CE350DF62E21D79C00EC2F36 /* AppDelegate.swift in Sources */,
+				CE350E062E223B7500EC2F36 /* LiveWindow.swift in Sources */,
+				CE350E082E223BB700EC2F36 /* VideoCaptureDevs.swift in Sources */,
+				CE350E0A2E223BCD00EC2F36 /* Windows.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		CE350DF92E21D79E00EC2F36 /* CtrlPanel.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				CE350DFA2E21D79E00EC2F36 /* Base */,
+			);
+			name = CtrlPanel.xib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		CE350DFE2E21D79E00EC2F36 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		CE350DFF2E21D79E00EC2F36 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		CE350E012E21D79E00EC2F36 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = preZENter/preZENter.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = preZENter/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				PRODUCT_BUNDLE_IDENTIFIER = hx.preZENter;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.2;
+			};
+			name = Debug;
+		};
+		CE350E022E21D79E00EC2F36 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = preZENter/preZENter.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = preZENter/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				PRODUCT_BUNDLE_IDENTIFIER = hx.preZENter;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.2;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		CE350DED2E21D79C00EC2F36 /* Build configuration list for PBXProject "preZENter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CE350DFE2E21D79E00EC2F36 /* Debug */,
+				CE350DFF2E21D79E00EC2F36 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CE350E002E21D79E00EC2F36 /* Build configuration list for PBXNativeTarget "preZENter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CE350E012E21D79E00EC2F36 /* Debug */,
+				CE350E022E21D79E00EC2F36 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = CE350DEA2E21D79C00EC2F36 /* Project object */;
+}
