@@ -6,11 +6,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @IBOutlet weak var window: NSWindow!
     @IBOutlet weak var windowsList: NSPopUpButton!
     @IBOutlet weak var devList: NSPopUpButton!
-    @IBOutlet weak var liveContent: NSTextField!
+    @IBOutlet weak var liveContentIndicator: NSTextField!
     
     private var liveWindow: LiveWindow?
     private var videoDevs = VideoCaptureDevs()
     private var windows = Windows()
+    
+    @IBAction func getLatestRelease(_ sender: AnyObject) {
+        let url = URL(string: "https://github.com/homeofhx/preZENter/releases/latest")
+        NSWorkspace.shared.open(url!)
+    }
     
     @IBAction func selectWindow(_ sender: Any) {
         if liveWindow == nil {
@@ -18,7 +23,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         videoDevs.stopVideoDevSession(liveWindow: liveWindow!)
-        liveContent.stringValue = windowsList.selectedItem?.title ?? ""
+        
+        if windowsList.selectedItem?.title == "-- Select an app's window --" {
+            liveContentIndicator.stringValue = "Nothing"
+        } else {
+            liveContentIndicator.stringValue = windowsList.selectedItem?.title ?? ""
+        }
+        
         windows.selectWindow(popup: windowsList, liveWindow: liveWindow!)
     }
     
@@ -32,7 +43,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         windows.stopWindowSession(liveWindow: liveWindow!)
-        liveContent.stringValue = devList.selectedItem?.title ?? ""
+        
+        if devList.selectedItem?.title == "-- Select a video capture device --" {
+            liveContentIndicator.stringValue = "Nothing"
+        } else {
+            liveContentIndicator.stringValue = devList.selectedItem?.title ?? ""
+        }
+        
         videoDevs.selectDev(popup: devList, liveWindow: liveWindow!)
     }
     

@@ -16,7 +16,7 @@
         <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="preZENter" customModuleProvider="target">
             <connections>
                 <outlet property="devList" destination="IEx-yo-wUN" id="kAm-i2-fje"/>
-                <outlet property="liveContent" destination="GbQ-nV-Qoo" id="370-TU-lPS"/>
+                <outlet property="liveContentIndicator" destination="GbQ-nV-Qoo" id="370-TU-lPS"/>
                 <outlet property="window" destination="QvC-M9-y7g" id="mG6-kV-jCy"/>
                 <outlet property="windowsList" destination="dZB-fz-RYl" id="YOR-dv-MoM"/>
             </connections>
@@ -34,6 +34,12 @@
                                     <action selector="orderFrontStandardAboutPanel:" target="-1" id="Exp-CZ-Vem"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="Get Latest Release" id="Ep1-r8-vyh">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="getLatestRelease:" target="Voe-Tx-rLC" id="ruA-Zz-4hQ"/>
+                                </connections>
+                            </menuItem>
                             <menuItem title="Quit!" id="4sb-4s-VLi">
                                 <string key="keyEquivalent" base64-UTF8="YES">
 Gw
@@ -46,13 +52,13 @@ Gw
                     </menu>
                 </menuItem>
             </items>
-            <point key="canvasLocation" x="79" y="131"/>
+            <point key="canvasLocation" x="-109" y="112"/>
         </menu>
         <window title="preZENter - Control Panel" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" animationBehavior="default" titlebarAppearsTransparent="YES" id="QvC-M9-y7g">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
-            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+            <windowPositionMask key="initialPositionMask" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="560" y="100" width="625" height="200"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1050"/>
             <value key="minSize" type="size" width="625" height="200"/>
             <value key="maxSize" type="size" width="625" height="200"/>
             <view key="contentView" wantsLayer="YES" id="EiT-Mj-1SZ">
@@ -135,7 +141,7 @@ Gw
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="GbQ-nV-Qoo">
                         <rect key="frame" x="185" y="157" width="422" height="22"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <textFieldCell key="cell" lineBreakMode="clipping" id="FEY-vt-7yH">
+                        <textFieldCell key="cell" lineBreakMode="clipping" title="Please select an option below" id="FEY-vt-7yH">
                             <font key="font" metaFont="system" size="18"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
