@@ -14,7 +14,7 @@ class Windows: NSObject {
                 if let appContent = window[kCGWindowName as String] as? String,
                     let appName = window[kCGWindowOwnerName as String] as? String,
                     let windowID = window[kCGWindowNumber as String] as? NSNumber,
-                    !excludedAppNames.contains(appName), appContent.count != 0 {
+                    !excludedAppNames.contains(appName), appContent.count != 0, appName != "preZENter" {
                     popup.addItem(withTitle: "\(appName): \(appContent)")
                     popup.lastItem?.representedObject = windowID.uint32Value
                 }

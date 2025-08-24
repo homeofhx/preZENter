@@ -34,12 +34,20 @@
                                     <action selector="orderFrontStandardAboutPanel:" target="-1" id="Exp-CZ-Vem"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Get Latest Release" id="Ep1-r8-vyh">
+                            <menuItem isSeparatorItem="YES" id="YVv-LK-WYF"/>
+                            <menuItem title="Download the Latest Release" id="Ep1-r8-vyh">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
-                                    <action selector="getLatestRelease:" target="Voe-Tx-rLC" id="ruA-Zz-4hQ"/>
+                                    <action selector="getRelease:" target="Voe-Tx-rLC" id="ruA-Zz-4hQ"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="Getting Help" id="YKe-FA-Yly">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="getHelp:" target="Voe-Tx-rLC" id="4i0-Cb-lf9"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="Rrf-FI-9JD"/>
                             <menuItem title="Quit!" id="4sb-4s-VLi">
                                 <string key="keyEquivalent" base64-UTF8="YES">
 Gw
@@ -92,20 +100,9 @@ Gw
                             <menu key="menu" id="mgn-kS-bf2"/>
                         </popUpButtonCell>
                         <connections>
-                            <action selector="selectWindow:" target="Voe-Tx-rLC" id="mxM-IL-qqh"/>
+                            <action selector="selectWindow:" target="Voe-Tx-rLC" id="z6A-LT-jAL"/>
                         </connections>
                     </popUpButton>
-                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="bXi-Fm-Bln">
-                        <rect key="frame" x="524" y="82" width="87" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <buttonCell key="cell" type="push" title="Refresh" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="ZUS-JD-9Ey">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                        </buttonCell>
-                        <connections>
-                            <action selector="refreshWindows:" target="Voe-Tx-rLC" id="ZFT-Il-Pr4"/>
-                        </connections>
-                    </button>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Ggs-xQ-Qkz">
                         <rect key="frame" x="18" y="52" width="316" height="19"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -124,20 +121,9 @@ Gw
                             <menu key="menu" id="Ktp-y3-ymv"/>
                         </popUpButtonCell>
                         <connections>
-                            <action selector="selectVideoDev:" target="Voe-Tx-rLC" id="5DT-nV-Hkg"/>
+                            <action selector="selectVideoDev:" target="Voe-Tx-rLC" id="zzg-nk-WSw"/>
                         </connections>
                     </popUpButton>
-                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1nu-nb-qQM">
-                        <rect key="frame" x="524" y="16" width="87" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <buttonCell key="cell" type="push" title="Refresh" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="ln2-X9-taG">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                        </buttonCell>
-                        <connections>
-                            <action selector="refreshVideoDevs:" target="Voe-Tx-rLC" id="0cJ-gO-1d0"/>
-                        </connections>
-                    </button>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="GbQ-nV-Qoo">
                         <rect key="frame" x="185" y="157" width="422" height="22"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -147,9 +133,32 @@ Gw
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
+                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="eQc-ff-vfg">
+                        <rect key="frame" x="543" y="74" width="62" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSRefreshTemplate" imagePosition="overlaps" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="W0X-aR-1kQ">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="refresh:" target="Voe-Tx-rLC" id="t6f-s4-ArW"/>
+                        </connections>
+                    </button>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="vyZ-I1-0IE">
+                        <rect key="frame" x="537" y="43" width="74" height="30"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <textFieldCell key="cell" alignment="center" title="Refresh Contents" id="bKR-wT-WHa">
+                            <font key="font" metaFont="smallSystem"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
                 </subviews>
             </view>
             <point key="canvasLocation" x="141.5" y="437"/>
         </window>
     </objects>
+    <resources>
+        <image name="NSRefreshTemplate" width="11" height="15"/>
+    </resources>
 </document>

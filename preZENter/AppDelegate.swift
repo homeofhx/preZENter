@@ -12,8 +12,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var videoDevs = VideoCaptureDevs()
     private var windows = Windows()
     
-    @IBAction func getLatestRelease(_ sender: AnyObject) {
+    @IBAction func getRelease(_ sender: AnyObject) {
         let url = URL(string: "https://github.com/homeofhx/preZENter/releases/latest")
+        NSWorkspace.shared.open(url!)
+    }
+    
+    @IBAction func getHelp(_ sender: Any) {
+        let url = URL(string: "https://github.com/homeofhx/preZENter/wiki")
         NSWorkspace.shared.open(url!)
     }
     
@@ -33,10 +38,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         windows.selectWindow(popup: windowsList, liveWindow: liveWindow!)
     }
     
-    @IBAction func refreshWindows(_ sender: Any) {
-        windows.refreshWindows(popup: windowsList)
-    }
-    
     @IBAction func selectVideoDev(_ sender: Any) {
         if liveWindow == nil {
             liveWindow = LiveWindow()
@@ -53,13 +54,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         videoDevs.selectDev(popup: devList, liveWindow: liveWindow!)
     }
     
-    @IBAction func refreshVideoDevs(_ sender: Any) {
+    @IBAction func refresh(_ sender: Any) {
+        windows.refreshWindows(popup: windowsList)
         videoDevs.refreshDevs(popup: devList)
     }
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         if #available(macOS 10.15, *) {
-            CGRequestScreenCaptureAccess()     // NOTE: uncomment this part when building on Xcode 10, or it won't build
+//            CGRequestScreenCaptureAccess()     // NOTE: uncomment this part when building on Xcode 10, or it won't build
         }
         
         windowsList.addItem(withTitle: "-- Select an app's window --")
