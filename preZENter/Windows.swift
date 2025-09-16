@@ -4,17 +4,23 @@ import CoreGraphics
 class Windows: NSObject {
     
     private var currentWindowID: CGWindowID?
-    private let excludedAppNames = ["Spotlight", "Dock", "SystemUIServer", "Window Server", "Control Center", "Control Centre", "Notification Center", "Notification Centre", "TextInputMenuAgent"]
+    private let minWindowBound: CGFloat = 125
     
     public func setup(popup: NSPopUpButton) {
         let windowsListInfo = CGWindowListCopyWindowInfo(CGWindowListOption(arrayLiteral: .excludeDesktopElements, .optionOnScreenOnly), kCGNullWindowID)
         
         if let windowList = windowsListInfo as? [[String: AnyObject]] {
             for window in windowList {
+                let windowBounds = window[kCGWindowBounds as String] as? [String: CGFloat]
+                let windowBoundsAsRectangle = CGRect(dictionaryRepresentation: windowBounds! as CFDictionary)
+                let width = windowBoundsAsRectangle!.width
+                let height = windowBoundsAsRectangle!.height
+                
                 if let appContent = window[kCGWindowName as String] as? String,
                     let appName = window[kCGWindowOwnerName as String] as? String,
                     let windowID = window[kCGWindowNumber as String] as? NSNumber,
-                    !excludedAppNames.contains(appName), appContent.count != 0, appName != "preZENter" {
+                    appContent.count != 0, appName != "preZENter",
+                    width >= minWindowBound, height >= minWindowBound {
                     popup.addItem(withTitle: "\(appName): \(appContent)")
                     popup.lastItem?.representedObject = windowID.uint32Value
                 }

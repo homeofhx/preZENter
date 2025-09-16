@@ -10,13 +10,13 @@ Inspired by various video conferencing software's Share Screen feature. Influenc
 
 ## Features
 
-**Selective App Window Presenting.** Presents only one specific app's window, so your audience will focus on what you want them to see;
+- **Selective App Window Presenting.** Presents only one specific app's window, so your audience will focus on what you want them to see;
 
-**External Video Capture Integration.** Supports external video capture devices (e.g., HDMI/USB capture cards) for enhanced presentation flexibility;
+- **External Video Capture Integration.** Supports external video capture devices (e.g., HDMI/USB capture cards) for enhanced presentation flexibility;
 
-**Adaptive Display Compatibility.** Automatically adjusts the Live Window to various aspect ratios and resolutions, ensuring optimal presentation on different kinds of displays;
+- **Adaptive Display Compatibility.** Automatically adjusts the Live Window to various aspect ratios and resolutions, ensuring optimal presentation on different kinds of displays;
 
-**Legacy Mac OS Support.** Compatible with some older Mac OS, as low as 10.12 (Sierra).
+- **Legacy Mac OS Support.** Compatible with some older Mac OS, as low as 10.12 (Sierra).
 
 ## Technical Details
 

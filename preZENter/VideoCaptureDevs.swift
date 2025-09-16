@@ -4,7 +4,7 @@ import AVFoundation
 class VideoCaptureDevs: NSObject {
     
     private var videoDevices = AVCaptureDevice.devices(for: .video)
-    private var currentDevice : AVCaptureDevice!
+    private var currentDevice: AVCaptureDevice!
     private var currentSession = AVCaptureSession()
     
     public func setup(popup: NSPopUpButton) {
