@@ -23,34 +23,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @IBAction func selectWindow(_ sender: Any) {
-        if liveWindow == nil {
-            liveWindow = LiveWindow()
-        }
-        
+        setup(list: windowsList)
         videoDevs.stopVideoDevSession(liveWindow: liveWindow!)
-        
-        if windowsList.selectedItem?.title == "-- Select an app's window --" {
-            liveContentIndicator.stringValue = "Nothing"
-        } else {
-            liveContentIndicator.stringValue = windowsList.selectedItem?.title ?? ""
-        }
-        
         windows.selectWindow(popup: windowsList, liveWindow: liveWindow!)
     }
     
     @IBAction func selectVideoDev(_ sender: Any) {
-        if liveWindow == nil {
-            liveWindow = LiveWindow()
-        }
-        
+        setup(list: devList)
         windows.stopWindowSession(liveWindow: liveWindow!)
-        
-        if devList.selectedItem?.title == "-- Select a video capture device --" {
-            liveContentIndicator.stringValue = "Nothing"
-        } else {
-            liveContentIndicator.stringValue = devList.selectedItem?.title ?? ""
-        }
-        
         videoDevs.selectDev(popup: devList, liveWindow: liveWindow!)
     }
     
@@ -59,13 +39,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         videoDevs.refreshDevs(popup: devList)
     }
     
+    private func setup(list: NSPopUpButton) {
+        if liveWindow == nil {
+            liveWindow = LiveWindow()
+        }
+        
+        if list.selectedItem?.title == "-- None --" {
+            liveContentIndicator.stringValue = "Nothing"
+        } else {
+            liveContentIndicator.stringValue = list.selectedItem?.title ?? ""
+        }
+    }
+    
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         if #available(macOS 10.15, *) {
 //            CGRequestScreenCaptureAccess()     // NOTE: uncomment this part when building on Xcode 10, or it won't build
         }
         
-        windowsList.addItem(withTitle: "-- Select an app's window --")
-        devList.addItem(withTitle: "-- Select a video capture device --")
+        windowsList.addItem(withTitle: "-- None --")
+        devList.addItem(withTitle: "-- None --")
         windows.setup(popup: windowsList)
         videoDevs.setup(popup: devList)
     }

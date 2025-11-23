@@ -76,25 +76,25 @@ Gw
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="mdN-2a-1K9">
-                        <rect key="frame" x="28" y="156" width="153" height="24"/>
+                        <rect key="frame" x="23" y="156" width="159" height="24"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <textFieldCell key="cell" lineBreakMode="clipping" title="Current on Live:" id="60X-fQ-hvJ">
+                        <textFieldCell key="cell" lineBreakMode="clipping" title="Now Presenting:" id="60X-fQ-hvJ">
                             <font key="font" metaFont="systemBold" size="20"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="46F-sD-erw">
-                        <rect key="frame" x="18" y="118" width="316" height="19"/>
+                        <rect key="frame" x="18" y="118" width="146" height="19"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <textFieldCell key="cell" lineBreakMode="clipping" title="choose an APPLICATION WINDOW to present:" id="iQ9-rG-8SX">
+                        <textFieldCell key="cell" lineBreakMode="clipping" title="Application Windows" id="iQ9-rG-8SX">
                             <font key="font" metaFont="systemThin" size="15"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
                     <popUpButton verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="dZB-fz-RYl">
-                        <rect key="frame" x="18" y="86" width="507" height="26"/>
+                        <rect key="frame" x="18" y="86" width="195" height="26"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" id="4hz-9f-Kay">
                             <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
@@ -106,16 +106,16 @@ Gw
                         </connections>
                     </popUpButton>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Ggs-xQ-Qkz">
-                        <rect key="frame" x="18" y="52" width="316" height="19"/>
+                        <rect key="frame" x="233" y="118" width="159" height="19"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <textFieldCell key="cell" lineBreakMode="clipping" title="choose a VIDEO CAPTURE DEVICE to present:" id="VEG-OL-lmP">
+                        <textFieldCell key="cell" lineBreakMode="clipping" title="Video Capture Devices" id="VEG-OL-lmP">
                             <font key="font" metaFont="systemThin" size="15"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
                     <popUpButton verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="IEx-yo-wUN">
-                        <rect key="frame" x="18" y="20" width="507" height="26"/>
+                        <rect key="frame" x="233" y="86" width="195" height="26"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" id="zLk-9p-sxx">
                             <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
@@ -127,29 +127,64 @@ Gw
                         </connections>
                     </popUpButton>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="GbQ-nV-Qoo">
-                        <rect key="frame" x="185" y="157" width="422" height="22"/>
+                        <rect key="frame" x="183" y="156" width="414" height="22"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <textFieldCell key="cell" lineBreakMode="clipping" title="Please select an option below" id="FEY-vt-7yH">
+                        <textFieldCell key="cell" lineBreakMode="clipping" title="Select an option below" id="FEY-vt-7yH">
                             <font key="font" metaFont="system" size="18"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
-                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="eQc-ff-vfg">
-                        <rect key="frame" x="543" y="74" width="62" height="32"/>
+                    <button toolTip="Refreshes the Application Window List and Video Capture Device List" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="eQc-ff-vfg">
+                        <rect key="frame" x="69" y="41" width="62" height="32"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSRefreshTemplate" imagePosition="overlaps" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="W0X-aR-1kQ">
+                        <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSRefreshTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="W0X-aR-1kQ">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
+                        <accessibility description="Refresh List button"/>
                         <connections>
                             <action selector="refresh:" target="Voe-Tx-rLC" id="t6f-s4-ArW"/>
                         </connections>
                     </button>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="vyZ-I1-0IE">
-                        <rect key="frame" x="537" y="43" width="74" height="30"/>
+                        <rect key="frame" x="73" y="12" width="54" height="30"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <textFieldCell key="cell" alignment="center" title="Refresh Lists" id="bKR-wT-WHa">
+                            <font key="font" metaFont="smallSystem"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <button toolTip="Start/pause the Speaker Timer" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="JFM-cO-iKH">
+                        <rect key="frame" x="309" y="41" width="62" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="push" title="1:20" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="DKH-TV-3or">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                    </button>
+                    <button toolTip="Quickly switches to the previously presented content" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="H3K-8x-zT7">
+                        <rect key="frame" x="189" y="41" width="62" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSGoBackTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="W68-BF-3KV">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                    </button>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="M29-jI-LbJ">
+                        <rect key="frame" x="190" y="13" width="59" height="28"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <textFieldCell key="cell" alignment="center" title="Previous Content" id="Yfo-di-UUx">
+                            <font key="font" metaFont="smallSystem"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cbW-dT-6WR">
+                        <rect key="frame" x="320" y="13" width="40" height="28"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <textFieldCell key="cell" alignment="center" title="Start Timer" id="WF8-Fd-hoJ">
                             <font key="font" metaFont="smallSystem"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -182,6 +217,7 @@ Gw
         </touchBar>
     </objects>
     <resources>
+        <image name="NSGoBackTemplate" width="9" height="12"/>
         <image name="NSRefreshTemplate" width="11" height="15"/>
     </resources>
 </document>
