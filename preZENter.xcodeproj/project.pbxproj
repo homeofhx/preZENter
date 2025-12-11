@@ -14,6 +14,7 @@
 		CE350E062E223B7500EC2F36 /* LiveWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE350E052E223B7500EC2F36 /* LiveWindow.swift */; };
 		CE350E082E223BB700EC2F36 /* VideoCaptureDevs.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE350E072E223BB700EC2F36 /* VideoCaptureDevs.swift */; };
 		CE350E0A2E223BCD00EC2F36 /* Windows.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE350E092E223BCD00EC2F36 /* Windows.swift */; };
+		CE56079D2EE50D96001BE8FE /* PresenterTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE56079C2EE50D96001BE8FE /* PresenterTimer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +28,7 @@
 		CE350E052E223B7500EC2F36 /* LiveWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveWindow.swift; sourceTree = "<group>"; };
 		CE350E072E223BB700EC2F36 /* VideoCaptureDevs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCaptureDevs.swift; sourceTree = "<group>"; };
 		CE350E092E223BCD00EC2F36 /* Windows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Windows.swift; sourceTree = "<group>"; };
+		CE56079C2EE50D96001BE8FE /* PresenterTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenterTimer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -68,6 +70,7 @@
 				CE350E052E223B7500EC2F36 /* LiveWindow.swift */,
 				CE350E072E223BB700EC2F36 /* VideoCaptureDevs.swift */,
 				CE350E092E223BCD00EC2F36 /* Windows.swift */,
+				CE56079C2EE50D96001BE8FE /* PresenterTimer.swift */,
 			);
 			path = preZENter;
 			sourceTree = "<group>";
@@ -148,6 +151,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CE350DF62E21D79C00EC2F36 /* AppDelegate.swift in Sources */,
+				CE56079D2EE50D96001BE8FE /* PresenterTimer.swift in Sources */,
 				CE350E062E223B7500EC2F36 /* LiveWindow.swift in Sources */,
 				CE350E082E223BB700EC2F36 /* VideoCaptureDevs.swift in Sources */,
 				CE350E0A2E223BCD00EC2F36 /* Windows.swift in Sources */,
