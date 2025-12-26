@@ -3,9 +3,10 @@ import Foundation
 
 class PresenterTimer: NSObject {
     
-    private var timer: Timer?
-    private var totalSeconds: Int = 0
+    public var totalSeconds: Int = 0
     public var onTick: ((String) -> Void)?
+    
+    private var timer: Timer?
     
     public func startTimer() {
         timer?.invalidate()
