@@ -10,25 +10,24 @@ Inspired by various video conferencing software's Share Screen feature. Influenc
 
 ## Features
 
-- **Selective App Window Presenting.** Presents only one specific app's window, so your audience will focus on what you want them to see;
+- **Selective Content Presenting.** Presents only one specific app's window or a video capture device, so your audience will focus on what you want them to see;
 
-- **External Video Capture Integration.** Supports external video capture devices (e.g., HDMI/USB capture cards) for enhanced presentation flexibility;
+- **Handy Tools.** Contains tools that can be helpful for your presentation, including Presenter Timer, Screen Switcher, and menu bar shortcuts.
 
-- **Adaptive Display Compatibility.** Automatically adjusts the Live Window to various aspect ratios and resolutions, ensuring optimal presentation on different kinds of displays;
+- **Easy to use.** No need to spend a long time learning how to set everything up.
 
-- **Legacy Mac OS Support.** Compatible with some older Mac OS, as low as 10.12 (Sierra).
+- **Legacy Mac OS Support.** Compatible with some older version of Mac OS, as low as 10.12 (Sierra).
 
 ## Technical Details
 
-**Mac OS Compatibility:** Depends on the build. **X86_64 build:** 10.12 (Sierra) to 10.14 (Mojave); **Universal 2 build:** 10.15 (Catalina) or newer.
+**Mac OS Compatibility:** **X86_64 build:** 10.12 (Sierra) to 10.14 (Mojave); **Universal 2 build:** 10.15 (Catalina) or newer.
 
-**Frameworks Used** (original program): [AVFoundation](https://developer.apple.com/documentation/avfoundation) (for external video capture devices capturing), [AppKit](https://developer.apple.com/documentation/appkit) ([Cocoa](https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/CocoaFundamentals/WhatIsCocoa/WhatIsCocoa.html), for the UI), [Core Graphics](https://developer.apple.com/documentation/coregraphics) (for app window capturing)
+**Frameworks Used:** [AVFoundation](https://developer.apple.com/documentation/avfoundation) (for external video capture devices capturing), [AppKit](https://developer.apple.com/documentation/appkit) ([Cocoa](https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/CocoaFundamentals/WhatIsCocoa/WhatIsCocoa.html), for the UI), [Core Graphics](https://developer.apple.com/documentation/coregraphics) (for app window capturing)
 
-**Build Environment:** The original program and X86_64 build were written in Xcode 10 and Swift 4.2. Universal 2 build was built on the latest Xcode, with `Deployment Target=10.15` and `Architecture=$(ARCHS_STANDARD)` (Apple Silicon, Intel).
+**Build Environment:** X86_64 build: Xcode 10. Universal 2 build: latest Xcode with `Deployment Target=10.15` and `Architecture=$(ARCHS_STANDARD)` (Apple Silicon, Intel).
 
 >Note when building on Xcode 10: make sure to comment out the part involving `CGRequestScreenCaptureAccess()`, otherwise Xcode can't build the project.
 
-
 ## Thanks
 
-[@benjones](https://github.com/benjones) for suggesting the framework and logic for capturing app windows
+[@benjones](https://github.com/benjones) for suggesting the framework and logic for capturing app windows & the idea of menu bar shortcuts

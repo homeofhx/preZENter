@@ -5,6 +5,7 @@ class MenuBarShortcuts: NSObject {
     public var toggleMenuItem: NSMenuItem?
     public var windowSubMenu = NSMenu()
     public var deviceSubMenu = NSMenu()
+    public var screenSubMenu = NSMenu()
     
     internal private(set) var menuBarItem: NSStatusItem!
     
@@ -25,7 +26,7 @@ class MenuBarShortcuts: NSObject {
         setupMenu()
     }
     
-    public func updateMenuBarTime(with timeString: String) {
+    public func updateMenuBarTimer(with timeString: String) {
         DispatchQueue.main.async {
             self.menuBarItem.button?.title = "  " + timeString
         }
@@ -50,10 +51,16 @@ class MenuBarShortcuts: NSObject {
         deviceItem.submenu = deviceSubMenu
         menu.addItem(deviceItem)
         
-        let refreshItem = NSMenuItem(title: "Refresh Lists", action: #selector(AppDelegate.refresh), keyEquivalent: "")
+        let screenItem = NSMenuItem(title: "Present On...", action: nil, keyEquivalent: "")
+        screenItem.submenu = screenSubMenu
+        menu.addItem(screenItem)
+        
+        menu.addItem(NSMenuItem.separator())
+        
+        let refreshItem = NSMenuItem(title: "Refresh Contents", action: #selector(AppDelegate.refresh), keyEquivalent: "")
         refreshItem.target = appDelegate
         menu.addItem(refreshItem)
-                
+        
         menuBarItem.menu = menu
     }
     

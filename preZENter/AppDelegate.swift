@@ -18,14 +18,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let presenterTimer = PresenterTimer()
     private var isTimerRunning: Bool = false
     private var menuBarShortcuts = MenuBarShortcuts()
+    private let screenSwitcher = ScreenSwitcher()
     
-    @IBAction func getRelease(_ sender: AnyObject) {
+    @IBAction func getLatestRelease(_ sender: AnyObject) {
         let url = URL(string: "https://github.com/homeofhx/preZENter/releases/latest")
-        NSWorkspace.shared.open(url!)
-    }
-    
-    @IBAction func getHelp(_ sender: Any) {
-        let url = URL(string: "https://github.com/homeofhx/preZENter/wiki")
         NSWorkspace.shared.open(url!)
     }
     
@@ -49,6 +45,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     
     @IBAction func timerButton(_ sender: Any) {
         startOrStopTimer()
+    }
+    
+    @IBAction func showScreenList(_ sender: NSButton) {
+        let screenList = NSMenu(title: "Select a Screen")
+        populateScreens(screenList)
+        let point = NSPoint(x: 0, y: sender.frame.height)
+        screenList.popUp(positioning: nil, at: point, in: sender)
+    }
+    
+    @objc func switchLiveWindowScreen(_ sender: NSMenuItem) {
+        if liveWindow == nil {
+            setup(list: windowsList)
+        }
+        
+        if let liveWinInstance = liveWindow?.window {
+            screenSwitcher.moveLiveWindowToSelectedScreen(window: liveWinInstance, to: sender.tag)
+        }
     }
     
     @objc func menuBarTimerHandler() {
@@ -79,8 +92,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     
     private func setupTimer() {
         presenterTimer.onTick = {[weak self] timeString in DispatchQueue.main.async {
-                self?.timerText.stringValue = timeString
-                self?.menuBarShortcuts.updateMenuBarTime(with: timeString)
+            self?.timerText.stringValue = timeString
+            self?.menuBarShortcuts.updateMenuBarTimer(with: timeString)
             }
         }
     }
@@ -104,6 +117,26 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func refreshMenuBarItems() {
         updateSubMenuItems(menu: menuBarShortcuts.windowSubMenu, from: windowsList, action: #selector(menuBarWindowsHandler(_:)))
         updateSubMenuItems(menu: menuBarShortcuts.deviceSubMenu, from: devList, action: #selector(menuBarDevHandler(_:)))
+        refreshMenuBarScreens(menu: menuBarShortcuts.screenSubMenu)
+    }
+    
+    private func refreshMenuBarScreens(menu: NSMenu) {
+        populateScreens(menu)
+    }
+    
+    private func populateScreens(_ menu: NSMenu) {
+        menu.removeAllItems()
+        let screens = NSScreen.screens
+        
+        for (index, screen) in screens.enumerated() {
+            let screenName = screenSwitcher.getScreenNameOrResolution(screen: screen)
+            let screenMenuItem = NSMenuItem(title: screenName,
+                                            action: #selector(switchLiveWindowScreen(_:)),
+                                            keyEquivalent: "")
+            screenMenuItem.tag = index
+            screenMenuItem.target = self
+            menu.addItem(screenMenuItem)
+        }
     }
     
     private func updateSubMenuItems(menu: NSMenu, from popup: NSPopUpButton, action: Selector) {
@@ -118,7 +151,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         if #available(macOS 10.15, *) {
-//            CGRequestScreenCaptureAccess()     // NOTE: uncomment this part when building on Xcode 10, or it won't build
+            //            CGRequestScreenCaptureAccess()     // NOTE: uncomment this part when building on Xcode 10, or it won't build
         }
         
         AppDelegate.sharedPlaceholder = self

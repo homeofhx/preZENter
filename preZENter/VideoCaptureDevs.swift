@@ -14,7 +14,7 @@ class VideoCaptureDevs: NSObject {
     }
     
     public func refreshDevs(popup: NSPopUpButton) {
-        for _ in 1...popup.numberOfItems-1 {
+        while popup.numberOfItems > 1 {
             popup.removeItem(at: 1)
         }
         

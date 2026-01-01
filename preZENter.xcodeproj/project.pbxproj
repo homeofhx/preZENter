@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		CE19994E2EEB876000311FFB /* menuBarShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE19994D2EEB876000311FFB /* menuBarShortcuts.swift */; };
+		CE19994E2EEB876000311FFB /* MenuBarShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE19994D2EEB876000311FFB /* MenuBarShortcuts.swift */; };
 		CE350DF62E21D79C00EC2F36 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE350DF52E21D79C00EC2F36 /* AppDelegate.swift */; };
 		CE350DF82E21D79E00EC2F36 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE350DF72E21D79E00EC2F36 /* Assets.xcassets */; };
 		CE350DFB2E21D79E00EC2F36 /* CtrlPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = CE350DF92E21D79E00EC2F36 /* CtrlPanel.xib */; };
@@ -16,10 +16,11 @@
 		CE350E082E223BB700EC2F36 /* VideoCaptureDevs.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE350E072E223BB700EC2F36 /* VideoCaptureDevs.swift */; };
 		CE350E0A2E223BCD00EC2F36 /* Windows.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE350E092E223BCD00EC2F36 /* Windows.swift */; };
 		CE56079D2EE50D96001BE8FE /* PresenterTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE56079C2EE50D96001BE8FE /* PresenterTimer.swift */; };
+		CE5AED5C2F00BCB3003C8399 /* ScreenSwitcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5AED5B2F00BCB3003C8399 /* ScreenSwitcher.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		CE19994D2EEB876000311FFB /* menuBarShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = menuBarShortcuts.swift; sourceTree = "<group>"; };
+		CE19994D2EEB876000311FFB /* MenuBarShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarShortcuts.swift; sourceTree = "<group>"; };
 		CE350DF22E21D79C00EC2F36 /* preZENter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = preZENter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE350DF52E21D79C00EC2F36 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CE350DF72E21D79E00EC2F36 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -31,6 +32,7 @@
 		CE350E072E223BB700EC2F36 /* VideoCaptureDevs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCaptureDevs.swift; sourceTree = "<group>"; };
 		CE350E092E223BCD00EC2F36 /* Windows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Windows.swift; sourceTree = "<group>"; };
 		CE56079C2EE50D96001BE8FE /* PresenterTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenterTimer.swift; sourceTree = "<group>"; };
+		CE5AED5B2F00BCB3003C8399 /* ScreenSwitcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenSwitcher.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,7 +75,8 @@
 				CE350E072E223BB700EC2F36 /* VideoCaptureDevs.swift */,
 				CE350E092E223BCD00EC2F36 /* Windows.swift */,
 				CE56079C2EE50D96001BE8FE /* PresenterTimer.swift */,
-				CE19994D2EEB876000311FFB /* menuBarShortcuts.swift */,
+				CE19994D2EEB876000311FFB /* MenuBarShortcuts.swift */,
+				CE5AED5B2F00BCB3003C8399 /* ScreenSwitcher.swift */,
 			);
 			path = preZENter;
 			sourceTree = "<group>";
@@ -153,10 +156,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CE5AED5C2F00BCB3003C8399 /* ScreenSwitcher.swift in Sources */,
 				CE350DF62E21D79C00EC2F36 /* AppDelegate.swift in Sources */,
 				CE56079D2EE50D96001BE8FE /* PresenterTimer.swift in Sources */,
 				CE350E062E223B7500EC2F36 /* LiveWindow.swift in Sources */,
-				CE19994E2EEB876000311FFB /* menuBarShortcuts.swift in Sources */,
+				CE19994E2EEB876000311FFB /* MenuBarShortcuts.swift in Sources */,
 				CE350E082E223BB700EC2F36 /* VideoCaptureDevs.swift in Sources */,
 				CE350E0A2E223BCD00EC2F36 /* Windows.swift in Sources */,
 			);
