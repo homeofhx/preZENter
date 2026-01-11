@@ -11,9 +11,7 @@ class LiveWindow: NSWindowController {
             contentRect: NSRect(x: 0, y: 0, width: 1024, height: 576),
             styleMask: [.titled, .closable, .resizable, .miniaturizable],
             backing: .buffered,
-            defer: false
-        )
-        
+            defer: false)
         LiveWindow.title = "preZENter - Live Window"
         LiveWindow.center()
         LiveWindow.backgroundColor = NSColor.black
@@ -27,7 +25,7 @@ class LiveWindow: NSWindowController {
         LiveWindow.contentView?.addSubview(windowLayer)
     }
     
-    public func updateImage(_ image: NSImage) {
+    public func updateWindowLayerImage(_ image: NSImage) {
         windowLayer.image = image
     }
     
@@ -35,7 +33,7 @@ class LiveWindow: NSWindowController {
         stopLiveView()
         
         let newPreviewLayer = AVCaptureVideoPreviewLayer(session: session)
-        newPreviewLayer.videoGravity = .resizeAspectFill
+        newPreviewLayer.videoGravity = .resizeAspect
         
         if let contentView = self.window?.contentView {
             newPreviewLayer.frame = contentView.bounds
@@ -48,10 +46,6 @@ class LiveWindow: NSWindowController {
         
         videoDevLayer = newPreviewLayer
         self.window?.makeKeyAndOrderFront(nil)
-    }
-    
-    public func updateWindowImage(_ image: NSImage) {
-        windowLayer.image = image
     }
     
     public func stopLiveView() {

@@ -5,6 +5,7 @@ class Windows: NSObject {
     
     private var currentWindowID: CGWindowID?
     private let minWindowBound: CGFloat = 125
+    private var captureTimer: Timer?
     
     public func setup(popup: NSPopUpButton) {
         let windowsListInfo = CGWindowListCopyWindowInfo(CGWindowListOption(arrayLiteral: .excludeDesktopElements, .optionOnScreenOnly), kCGNullWindowID)
@@ -28,7 +29,7 @@ class Windows: NSObject {
         }
     }
     
-    public func refreshWindows(popup: NSPopUpButton) {
+    public func refreshWindowsOnScreen(popup: NSPopUpButton) {
         while popup.numberOfItems > 1 {
             popup.removeItem(at: 1)
         }
@@ -40,15 +41,15 @@ class Windows: NSObject {
         stopWindowSession(liveWindow: liveWindow)
         
         guard let selectedWindow = popup.selectedItem,
-            let windowID = selectedWindow.representedObject as? CGWindowID else {
-                return
-        }
+            let windowID = selectedWindow.representedObject as? CGWindowID else { return }
         
         currentWindowID = windowID
-        showLiveView(liveWindow: liveWindow)
+        showCurrentWindowLiveView(liveWindow: liveWindow)
     }
     
     public func stopWindowSession(liveWindow: LiveWindow) {
+        captureTimer?.invalidate()
+        captureTimer = nil
         currentWindowID = nil
         liveWindow.stopLiveView()
     }
@@ -63,15 +64,18 @@ class Windows: NSObject {
         return nil
     }
     
-    private func showLiveView(liveWindow: LiveWindow) {
-        Timer.scheduledTimer(withTimeInterval: 1.0 / 30.0, repeats: true) { [weak self] timer in
+    private func showCurrentWindowLiveView(liveWindow: LiveWindow) {
+        captureTimer?.invalidate()
+        
+        captureTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 35.0, repeats: true) { [weak self] timer in
             guard let self = self else { return }
-            guard let image = self.captureWindowImage(windowID: self.currentWindowID ?? kCGNullWindowID) else {
-                timer.invalidate()
-                return
+            guard let windowID = self.currentWindowID,
+                let windowImage = self.captureWindowImage(windowID: windowID) else {
+                    self.stopWindowSession(liveWindow: liveWindow)
+                    return
             }
             
-            liveWindow.updateImage(image)
+            liveWindow.updateWindowLayerImage(windowImage)
         }
     }
     

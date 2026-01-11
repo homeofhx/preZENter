@@ -36,7 +36,7 @@ class MenuBarShortcuts: NSObject {
         let menu = NSMenu()
         let appDelegate = AppDelegate.sharedPlaceholder
         
-        let timerButton = NSMenuItem(title: "Start Timer", action: #selector(AppDelegate.menuBarTimerHandler), keyEquivalent: "")
+        let timerButton = NSMenuItem(title: "Start Timer", action: #selector(AppDelegate.menuBarPresenterTimerHandler), keyEquivalent: "")
         timerButton.target = appDelegate
         menu.addItem(timerButton)
         self.toggleMenuItem = timerButton
@@ -57,7 +57,7 @@ class MenuBarShortcuts: NSObject {
         
         menu.addItem(NSMenuItem.separator())
         
-        let refreshItem = NSMenuItem(title: "Refresh Contents", action: #selector(AppDelegate.refresh), keyEquivalent: "")
+        let refreshItem = NSMenuItem(title: "Refresh Contents", action: #selector(AppDelegate.refreshContents), keyEquivalent: "")
         refreshItem.target = appDelegate
         menu.addItem(refreshItem)
         

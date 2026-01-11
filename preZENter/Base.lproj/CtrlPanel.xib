@@ -41,7 +41,7 @@
                             <menuItem title="Get the Latest Release" id="Ep1-r8-vyh">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
-                                    <action selector="getLatestRelease:" target="Voe-Tx-rLC" id="e5v-ar-fST"/>
+                                    <action selector="getLatestRelease:" target="Voe-Tx-rLC" id="fKG-WL-aZQ"/>
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="Rrf-FI-9JD"/>
@@ -63,7 +63,7 @@ Gw
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
             <windowPositionMask key="initialPositionMask" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="560" y="100" width="550" height="200"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1050"/>
             <value key="minSize" type="size" width="550" height="200"/>
             <value key="maxSize" type="size" width="550" height="200"/>
             <view key="contentView" wantsLayer="YES" id="EiT-Mj-1SZ">
@@ -97,7 +97,7 @@ Gw
                             <menu key="menu" id="mgn-kS-bf2"/>
                         </popUpButtonCell>
                         <connections>
-                            <action selector="selectWindow:" target="Voe-Tx-rLC" id="z6A-LT-jAL"/>
+                            <action selector="selectWindow:" target="Voe-Tx-rLC" id="Qvd-Gn-919"/>
                         </connections>
                     </popUpButton>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Ggs-xQ-Qkz">
@@ -118,7 +118,7 @@ Gw
                             <menu key="menu" id="Ktp-y3-ymv"/>
                         </popUpButtonCell>
                         <connections>
-                            <action selector="selectVideoDev:" target="Voe-Tx-rLC" id="zzg-nk-WSw"/>
+                            <action selector="selectVideoDev:" target="Voe-Tx-rLC" id="afc-3K-sCP"/>
                         </connections>
                     </popUpButton>
                     <button toolTip="Refresh the Application Window List, Video Capture Device List and Screen List" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="eQc-ff-vfg">
@@ -130,7 +130,7 @@ Gw
                         </buttonCell>
                         <accessibility description="Refresh List button"/>
                         <connections>
-                            <action selector="refresh:" target="Voe-Tx-rLC" id="t6f-s4-ArW"/>
+                            <action selector="refreshContents:" target="Voe-Tx-rLC" id="s5r-Ur-8MC"/>
                         </connections>
                     </button>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="vyZ-I1-0IE">
@@ -150,7 +150,7 @@ Gw
                             <font key="font" metaFont="system"/>
                         </buttonCell>
                         <connections>
-                            <action selector="timerButton:" target="Voe-Tx-rLC" id="f0k-7X-YTm"/>
+                            <action selector="presenterTimerButtonPressed:" target="Voe-Tx-rLC" id="1zw-2V-8Ca"/>
                         </connections>
                     </button>
                     <button toolTip="Move Live Window to selected screen" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="H3K-8x-zT7">
@@ -161,7 +161,7 @@ Gw
                             <font key="font" metaFont="system"/>
                         </buttonCell>
                         <connections>
-                            <action selector="showScreenList:" target="Voe-Tx-rLC" id="5zi-UP-xmg"/>
+                            <action selector="showScreenList:" target="Voe-Tx-rLC" id="auB-Yg-izo"/>
                         </connections>
                     </button>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="M29-jI-LbJ">
@@ -194,7 +194,7 @@ Gw
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="GbQ-nV-Qoo">
                         <rect key="frame" x="183" y="156" width="344" height="22"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <textFieldCell key="cell" lineBreakMode="clipping" title="Select an option below" id="FEY-vt-7yH">
+                        <textFieldCell key="cell" lineBreakMode="clipping" title="Select a content..." id="FEY-vt-7yH">
                             <font key="font" metaFont="system" size="18"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>

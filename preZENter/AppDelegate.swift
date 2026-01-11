@@ -37,19 +37,19 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         videoDevs.selectDev(popup: devList, liveWindow: liveWindow!)
     }
     
-    @IBAction func refresh(_ sender: Any) {
-        windows.refreshWindows(popup: windowsList)
+    @IBAction func refreshContents(_ sender: Any) {
+        windows.refreshWindowsOnScreen(popup: windowsList)
         videoDevs.refreshDevs(popup: devList)
         refreshMenuBarItems()
     }
     
-    @IBAction func timerButton(_ sender: Any) {
-        startOrStopTimer()
+    @IBAction func presenterTimerButtonPressed(_ sender: Any) {
+        startOrStopPresenterTimer()
     }
     
     @IBAction func showScreenList(_ sender: NSButton) {
         let screenList = NSMenu(title: "Select a Screen")
-        populateScreens(screenList)
+        refreshScreens(screenList)
         let point = NSPoint(x: 0, y: sender.frame.height)
         screenList.popUp(positioning: nil, at: point, in: sender)
     }
@@ -64,8 +64,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
     
-    @objc func menuBarTimerHandler() {
-        startOrStopTimer()
+    @objc func menuBarPresenterTimerHandler() {
+        startOrStopPresenterTimer()
     }
     
     @objc func menuBarWindowsHandler(_ sender: NSMenuItem) {
@@ -79,18 +79,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
     
     private func setup(list: NSPopUpButton) {
-        if liveWindow == nil {
-            liveWindow = LiveWindow()
-        }
-        
-        if list.selectedItem?.title == "-- None --" {
-            liveContentIndicator.stringValue = "Nothing"
-        } else {
-            liveContentIndicator.stringValue = list.selectedItem?.title ?? ""
-        }
+        liveWindow = liveWindow ?? LiveWindow()
+        let title = list.selectedItem?.title
+        liveContentIndicator.stringValue = (title == "-- None --") ? "Nothing" : (title ?? "")
     }
     
-    private func setupTimer() {
+    private func setupPresenterTimer() {
         presenterTimer.onTick = {[weak self] timeString in DispatchQueue.main.async {
             self?.timerText.stringValue = timeString
             self?.menuBarShortcuts.updateMenuBarTimer(with: timeString)
@@ -98,7 +92,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
     
-    private func startOrStopTimer() {
+    private func startOrStopPresenterTimer() {
         if !isTimerRunning {
             isTimerRunning = true
             timerButtonLabel.stringValue = "Pause Timer"
@@ -121,18 +115,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
     
     private func refreshMenuBarScreens(menu: NSMenu) {
-        populateScreens(menu)
+        refreshScreens(menu)
     }
     
-    private func populateScreens(_ menu: NSMenu) {
+    private func refreshScreens(_ menu: NSMenu) {
         menu.removeAllItems()
         let screens = NSScreen.screens
         
         for (index, screen) in screens.enumerated() {
             let screenName = screenSwitcher.getScreenNameOrResolution(screen: screen)
-            let screenMenuItem = NSMenuItem(title: screenName,
-                                            action: #selector(switchLiveWindowScreen(_:)),
-                                            keyEquivalent: "")
+            let screenMenuItem = NSMenuItem(title: screenName, action: #selector(switchLiveWindowScreen(_:)), keyEquivalent: "")
             screenMenuItem.tag = index
             screenMenuItem.target = self
             menu.addItem(screenMenuItem)
@@ -150,9 +142,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        if #available(macOS 10.15, *) {
-            //            CGRequestScreenCaptureAccess()     // NOTE: uncomment this part when building on Xcode 10, or it won't build
-        }
+        /// NOTE: comment out the following if-statement when building on Xcode 10, or it won't build.
+//        if #available(macOS 10.15, *) {
+//            CGRequestScreenCaptureAccess()
+//        }
         
         AppDelegate.sharedPlaceholder = self
         if let menu = menuBarShortcuts.menuBarItem.menu {
@@ -162,7 +155,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         devList.addItem(withTitle: "-- None --")
         windows.setup(popup: windowsList)
         videoDevs.setup(popup: devList)
-        setupTimer()
+        setupPresenterTimer()
         refreshMenuBarItems()
     }
     
