@@ -29,7 +29,7 @@ class Windows: NSObject {
         }
     }
     
-    public func refreshWindowsOnScreen(popup: NSPopUpButton) {
+    public func refreshWindows(popup: NSPopUpButton) {
         while popup.numberOfItems > 1 {
             popup.removeItem(at: 1)
         }

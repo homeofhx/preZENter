@@ -1,4 +1,5 @@
 import Cocoa
+import CoreAudio
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
@@ -18,7 +19,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let presenterTimer = PresenterTimer()
     private var isTimerRunning: Bool = false
     private var menuBarShortcuts = MenuBarShortcuts()
-    private let screenSwitcher = ScreenSwitcher()
+    private let switchers = Switchers()
     
     @IBAction func getLatestRelease(_ sender: AnyObject) {
         let url = URL(string: "https://github.com/homeofhx/preZENter/releases/latest")
@@ -38,7 +39,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
     
     @IBAction func refreshContents(_ sender: Any) {
-        windows.refreshWindowsOnScreen(popup: windowsList)
+        windows.refreshWindows(popup: windowsList)
         videoDevs.refreshDevs(popup: devList)
         refreshMenuBarItems()
     }
@@ -49,9 +50,27 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     
     @IBAction func showScreenList(_ sender: NSButton) {
         let screenList = NSMenu(title: "Select a Screen")
-        refreshScreens(screenList)
+        let screenData = NSScreen.screens.enumerated().map {
+            (switchers.getScreenNameOrResolution(screen: $0.element), $0.offset)
+        }
+        updateSubMenuItems(screenList, from: screenData, action: #selector(switchLiveWindowScreen(_:)))
         let point = NSPoint(x: 0, y: sender.frame.height)
         screenList.popUp(positioning: nil, at: point, in: sender)
+    }
+    
+    @IBAction func showAudioOutputDeviceList(_ sender: NSButton) {
+        let audioOutputList = NSMenu(title: "Select an Audio Output Device")
+        let deviceIDs = switchers.getAudioOutputDeviceIDs()
+        
+        if deviceIDs.isEmpty {
+            audioOutputList.addItem(withTitle: "No Output Devices Found", action: nil, keyEquivalent: "")
+        } else {
+            let audioData = deviceIDs.map { (switchers.getAudioOutputDeviceName(deviceID: $0), Int($0)) }
+            updateSubMenuItems(audioOutputList, from: audioData, action: #selector(menuBarAudioOutputDeviceHandler(_:)))
+        }
+        
+        let point = NSPoint(x: 0, y: sender.frame.height)
+        audioOutputList.popUp(positioning: nil, at: point, in: sender)
     }
     
     @objc func switchLiveWindowScreen(_ sender: NSMenuItem) {
@@ -60,7 +79,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         
         if let liveWinInstance = liveWindow?.window {
-            screenSwitcher.moveLiveWindowToSelectedScreen(window: liveWinInstance, to: sender.tag)
+            switchers.moveLiveWindowToSelectedScreen(window: liveWinInstance, to: sender.tag)
         }
     }
     
@@ -78,6 +97,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         selectVideoDev(devList!)
     }
     
+    @objc func menuBarAudioOutputDeviceHandler(_ sender: NSMenuItem) {
+        switchers.setAudioOutputDevice(to: AudioDeviceID(sender.tag))
+    }
+    
     private func setup(list: NSPopUpButton) {
         liveWindow = liveWindow ?? LiveWindow()
         let title = list.selectedItem?.title
@@ -93,51 +116,37 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
     
     private func startOrStopPresenterTimer() {
-        if !isTimerRunning {
-            isTimerRunning = true
-            timerButtonLabel.stringValue = "Pause Timer"
-            let systemFont = NSFont.systemFont(ofSize: 20.0, weight: .heavy)
-            timerText.font = systemFont
-            presenterTimer.startTimer()
-        } else {
-            isTimerRunning = false
-            timerButtonLabel.stringValue = "Resume Timer"
-            let systemFont = NSFont.systemFont(ofSize: 20.0, weight: .light)
-            timerText.font = systemFont
-            presenterTimer.pauseTimer()
-        }
+        isTimerRunning.toggle()
+        timerButtonLabel.stringValue = isTimerRunning ? "Pause Timer" : "Resume Timer"
+        timerText.font = .systemFont(ofSize: 20.0, weight: isTimerRunning ? .heavy : .light)
+        isTimerRunning ? presenterTimer.startTimer() : presenterTimer.pauseTimer()
     }
     
     private func refreshMenuBarItems() {
-        updateSubMenuItems(menu: menuBarShortcuts.windowSubMenu, from: windowsList, action: #selector(menuBarWindowsHandler(_:)))
-        updateSubMenuItems(menu: menuBarShortcuts.deviceSubMenu, from: devList, action: #selector(menuBarDevHandler(_:)))
-        refreshMenuBarScreens(menu: menuBarShortcuts.screenSubMenu)
-    }
-    
-    private func refreshMenuBarScreens(menu: NSMenu) {
-        refreshScreens(menu)
-    }
-    
-    private func refreshScreens(_ menu: NSMenu) {
-        menu.removeAllItems()
-        let screens = NSScreen.screens
+        let windowData = windowsList.itemArray.enumerated().map { ($0.element.title, $0.offset) }
+        updateSubMenuItems(menuBarShortcuts.windowSubMenu, from: windowData, action: #selector(menuBarWindowsHandler))
         
-        for (index, screen) in screens.enumerated() {
-            let screenName = screenSwitcher.getScreenNameOrResolution(screen: screen)
-            let screenMenuItem = NSMenuItem(title: screenName, action: #selector(switchLiveWindowScreen(_:)), keyEquivalent: "")
-            screenMenuItem.tag = index
-            screenMenuItem.target = self
-            menu.addItem(screenMenuItem)
+        let videoDevData = devList.itemArray.enumerated().map { ($0.element.title, $0.offset) }
+        updateSubMenuItems(menuBarShortcuts.deviceSubMenu, from: videoDevData, action: #selector(menuBarDevHandler))
+        
+        let screenData = NSScreen.screens.enumerated().map {
+            (switchers.getScreenNameOrResolution(screen: $0.element), $0.offset)
         }
+        updateSubMenuItems(menuBarShortcuts.screenSubMenu, from: screenData, action: #selector(switchLiveWindowScreen))
+        
+        let audioOutputDevData = switchers.getAudioOutputDeviceIDs().map {
+            (switchers.getAudioOutputDeviceName(deviceID: $0), Int($0))
+        }
+        updateSubMenuItems(menuBarShortcuts.audioOutputSubMenu, from: audioOutputDevData, action: #selector(menuBarAudioOutputDeviceHandler))
     }
     
-    private func updateSubMenuItems(menu: NSMenu, from popup: NSPopUpButton, action: Selector) {
+    private func updateSubMenuItems(_ menu: NSMenu, from items: [(title: String, tag: Int)], action: Selector) {
         menu.removeAllItems()
-        for item in popup.itemArray {
-            let newItem = NSMenuItem(title: item.title, action: action, keyEquivalent: "")
-            newItem.target = self
-            newItem.tag = popup.index(of: item)
-            menu.addItem(newItem)
+        for item in items {
+            let menuItem = NSMenuItem(title: item.title, action: action, keyEquivalent: "")
+            menuItem.target = self
+            menuItem.tag = item.tag
+            menu.addItem(menuItem)
         }
     }
     
@@ -160,17 +169,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
     
     func menuNeedsUpdate(_ menu: NSMenu) {
-        if let toggleItem = menuBarShortcuts.toggleMenuItem {
-            if isTimerRunning {
-                toggleItem.title = "Pause Timer"
-            } else {
-                if presenterTimer.totalSeconds > 0 {
-                    toggleItem.title = "Resume Timer"
-                } else {
-                    toggleItem.title = "Start Timer"
-                }
-            }
-        }
+        refreshMenuBarItems()
+        menuBarShortcuts.toggleMenuItem?.title = isTimerRunning ? "Pause Timer" : (presenterTimer.totalSeconds > 0 ? "Resume Timer" : "Start Timer")
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {}

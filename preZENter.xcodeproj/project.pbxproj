@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -16,7 +16,7 @@
 		CE350E082E223BB700EC2F36 /* VideoCaptureDevs.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE350E072E223BB700EC2F36 /* VideoCaptureDevs.swift */; };
 		CE350E0A2E223BCD00EC2F36 /* Windows.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE350E092E223BCD00EC2F36 /* Windows.swift */; };
 		CE56079D2EE50D96001BE8FE /* PresenterTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE56079C2EE50D96001BE8FE /* PresenterTimer.swift */; };
-		CE5AED5C2F00BCB3003C8399 /* ScreenSwitcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5AED5B2F00BCB3003C8399 /* ScreenSwitcher.swift */; };
+		CE5AED5C2F00BCB3003C8399 /* Switchers.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5AED5B2F00BCB3003C8399 /* Switchers.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,7 +32,7 @@
 		CE350E072E223BB700EC2F36 /* VideoCaptureDevs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCaptureDevs.swift; sourceTree = "<group>"; };
 		CE350E092E223BCD00EC2F36 /* Windows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Windows.swift; sourceTree = "<group>"; };
 		CE56079C2EE50D96001BE8FE /* PresenterTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenterTimer.swift; sourceTree = "<group>"; };
-		CE5AED5B2F00BCB3003C8399 /* ScreenSwitcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenSwitcher.swift; sourceTree = "<group>"; };
+		CE5AED5B2F00BCB3003C8399 /* Switchers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Switchers.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,7 +76,7 @@
 				CE350E092E223BCD00EC2F36 /* Windows.swift */,
 				CE56079C2EE50D96001BE8FE /* PresenterTimer.swift */,
 				CE19994D2EEB876000311FFB /* MenuBarShortcuts.swift */,
-				CE5AED5B2F00BCB3003C8399 /* ScreenSwitcher.swift */,
+				CE5AED5B2F00BCB3003C8399 /* Switchers.swift */,
 			);
 			path = preZENter;
 			sourceTree = "<group>";
@@ -121,7 +121,7 @@
 				};
 			};
 			buildConfigurationList = CE350DED2E21D79C00EC2F36 /* Build configuration list for PBXProject "preZENter" */;
-			compatibilityVersion = "Xcode 9.3";
+			compatibilityVersion = "Xcode 10.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -156,7 +156,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CE5AED5C2F00BCB3003C8399 /* ScreenSwitcher.swift in Sources */,
+				CE5AED5C2F00BCB3003C8399 /* Switchers.swift in Sources */,
 				CE350DF62E21D79C00EC2F36 /* AppDelegate.swift in Sources */,
 				CE56079D2EE50D96001BE8FE /* PresenterTimer.swift in Sources */,
 				CE350E062E223B7500EC2F36 /* LiveWindow.swift in Sources */,
