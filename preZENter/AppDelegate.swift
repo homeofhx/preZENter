@@ -7,6 +7,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @IBOutlet weak var window: NSWindow!
     @IBOutlet weak var windowsList: NSPopUpButton!
     @IBOutlet weak var devList: NSPopUpButton!
+    @IBOutlet weak var screenList: NSPopUpButton!
     @IBOutlet weak var liveContentIndicator: NSTextField!
     @IBOutlet weak var timerText: NSTextField!
     @IBOutlet weak var timerButtonLabel: NSTextField!
@@ -16,14 +17,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var liveWindow: LiveWindow?
     private var videoDevs = VideoCaptureDevs()
     private var windows = Windows()
+    private var screens = Screens()
     private let presenterTimer = PresenterTimer()
     private var isTimerRunning: Bool = false
     private var menuBarShortcuts = MenuBarShortcuts()
     private let switchers = Switchers()
     
     @IBAction func getLatestRelease(_ sender: AnyObject) {
-        let url = URL(string: "https://github.com/homeofhx/preZENter/releases/latest")
-        NSWorkspace.shared.open(url!)
+        NSWorkspace.shared.open(URL(string: "https://github.com/homeofhx/preZENter/releases/latest")!)
     }
     
     @IBAction func selectWindow(_ sender: Any) {
@@ -38,9 +39,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         videoDevs.selectDev(popup: devList, liveWindow: liveWindow!)
     }
     
+    @IBAction func selectScreen(_ sender: Any) {
+        setup(list: screenList)
+        windows.stopWindowSession(liveWindow: liveWindow!)
+        videoDevs.stopVideoDevSession(liveWindow: liveWindow!)
+        screens.selectScreen(popup: screenList, liveWindow: liveWindow!)
+    }
+    
     @IBAction func refreshContents(_ sender: Any) {
         windows.refreshWindows(popup: windowsList)
         videoDevs.refreshDevs(popup: devList)
+        screens.refreshScreens(popup: screenList)
         refreshMenuBarItems()
     }
     
@@ -53,7 +62,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let screenData = NSScreen.screens.enumerated().map {
             (switchers.getScreenNameOrResolution(screen: $0.element), $0.offset)
         }
-        updateSubMenuItems(screenList, from: screenData, action: #selector(switchLiveWindowScreen(_:)))
+        updateSubMenuItems(screenList, from: screenData, action: #selector(menuBarScreenSwitcherHandler(_:)))
         let point = NSPoint(x: 0, y: sender.frame.height)
         screenList.popUp(positioning: nil, at: point, in: sender)
     }
@@ -73,21 +82,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         audioOutputList.popUp(positioning: nil, at: point, in: sender)
     }
     
-    @objc func switchLiveWindowScreen(_ sender: NSMenuItem) {
-        if liveWindow == nil {
-            setup(list: windowsList)
-        }
-        
-        if let liveWinInstance = liveWindow?.window {
-            switchers.moveLiveWindowToSelectedScreen(window: liveWinInstance, to: sender.tag)
-        }
-    }
+    // Handlers for menu bar shortcuts
     
     @objc func menuBarPresenterTimerHandler() {
         startOrStopPresenterTimer()
     }
     
-    @objc func menuBarWindowsHandler(_ sender: NSMenuItem) {
+    @objc func menuBarWindowHandler(_ sender: NSMenuItem) {
         windowsList.selectItem(at: sender.tag)
         selectWindow(windowsList!)
     }
@@ -95,6 +96,21 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc func menuBarDevHandler(_ sender: NSMenuItem) {
         devList.selectItem(at: sender.tag)
         selectVideoDev(devList!)
+    }
+    
+    @objc func menuBarScreenHandler(_ sender: NSMenuItem) {
+        screenList.selectItem(at: sender.tag)
+        selectScreen(screenList!)
+    }
+    
+    @objc func menuBarScreenSwitcherHandler(_ sender: NSMenuItem) {
+        if liveWindow == nil {
+            setup(list: windowsList)
+        }
+        
+        if let liveWinInstance = liveWindow?.window {
+            switchers.moveLiveWindowToSelectedScreen(window: liveWinInstance, to: sender.tag)
+        }
     }
     
     @objc func menuBarAudioOutputDeviceHandler(_ sender: NSMenuItem) {
@@ -124,15 +140,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     
     private func refreshMenuBarItems() {
         let windowData = windowsList.itemArray.enumerated().map { ($0.element.title, $0.offset) }
-        updateSubMenuItems(menuBarShortcuts.windowSubMenu, from: windowData, action: #selector(menuBarWindowsHandler))
+        updateSubMenuItems(menuBarShortcuts.windowSubMenu, from: windowData, action: #selector(menuBarWindowHandler))
         
         let videoDevData = devList.itemArray.enumerated().map { ($0.element.title, $0.offset) }
         updateSubMenuItems(menuBarShortcuts.deviceSubMenu, from: videoDevData, action: #selector(menuBarDevHandler))
         
-        let screenData = NSScreen.screens.enumerated().map {
+        let screenData = screenList.itemArray.enumerated().map { ($0.element.title, $0.offset) }
+        updateSubMenuItems(menuBarShortcuts.screenSubMenu, from: screenData, action: #selector(menuBarScreenHandler))
+        
+        let displayData = NSScreen.screens.enumerated().map {
             (switchers.getScreenNameOrResolution(screen: $0.element), $0.offset)
         }
-        updateSubMenuItems(menuBarShortcuts.screenSubMenu, from: screenData, action: #selector(switchLiveWindowScreen))
+        updateSubMenuItems(menuBarShortcuts.displaySubMenu, from: displayData, action: #selector(menuBarScreenSwitcherHandler))
         
         let audioOutputDevData = switchers.getAudioOutputDeviceIDs().map {
             (switchers.getAudioOutputDeviceName(deviceID: $0), Int($0))
@@ -160,10 +179,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if let menu = menuBarShortcuts.menuBarItem.menu {
             menu.delegate = self
         }
-        windowsList.addItem(withTitle: "-- None --")
-        devList.addItem(withTitle: "-- None --")
         windows.setup(popup: windowsList)
         videoDevs.setup(popup: devList)
+        screens.setup(popup: screenList)
         setupPresenterTimer()
         refreshMenuBarItems()
     }

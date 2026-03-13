@@ -19,6 +19,7 @@
             <connections>
                 <outlet property="devList" destination="IEx-yo-wUN" id="kAm-i2-fje"/>
                 <outlet property="liveContentIndicator" destination="GbQ-nV-Qoo" id="370-TU-lPS"/>
+                <outlet property="screenList" destination="GAE-0w-zFF" id="9KJ-9o-njY"/>
                 <outlet property="timerButtonLabel" destination="cbW-dT-6WR" id="rVt-M8-soS"/>
                 <outlet property="timerText" destination="MSB-Au-jzZ" id="654-Ye-kSj"/>
                 <outlet property="window" destination="QvC-M9-y7g" id="mG6-kV-jCy"/>
@@ -63,7 +64,7 @@ Gw
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
             <windowPositionMask key="initialPositionMask" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="560" y="100" width="550" height="200"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1050"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1920" height="1080"/>
             <value key="minSize" type="size" width="550" height="200"/>
             <value key="maxSize" type="size" width="550" height="200"/>
             <view key="contentView" wantsLayer="YES" id="EiT-Mj-1SZ">
@@ -71,9 +72,9 @@ Gw
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="mdN-2a-1K9">
-                        <rect key="frame" x="23" y="156" width="159" height="24"/>
+                        <rect key="frame" x="23" y="156" width="113" height="24"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <textFieldCell key="cell" lineBreakMode="clipping" title="Now Presenting:" id="60X-fQ-hvJ">
+                        <textFieldCell key="cell" lineBreakMode="clipping" title="Presenting:" id="60X-fQ-hvJ">
                             <font key="font" metaFont="systemBold" size="20"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -89,7 +90,7 @@ Gw
                         </textFieldCell>
                     </textField>
                     <popUpButton verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="dZB-fz-RYl">
-                        <rect key="frame" x="23" y="86" width="245" height="26"/>
+                        <rect key="frame" x="23" y="86" width="180" height="26"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" id="4hz-9f-Kay">
                             <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
@@ -110,7 +111,7 @@ Gw
                         </textFieldCell>
                     </textField>
                     <popUpButton verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="IEx-yo-wUN">
-                        <rect key="frame" x="283" y="86" width="245" height="26"/>
+                        <rect key="frame" x="348" y="86" width="180" height="26"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" id="zLk-9p-sxx">
                             <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
@@ -167,7 +168,7 @@ Gw
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="M29-jI-LbJ">
                         <rect key="frame" x="350" y="14" width="59" height="28"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <textFieldCell key="cell" alignment="center" title="Switch Screen" id="Yfo-di-UUx">
+                        <textFieldCell key="cell" alignment="center" title="Present Screen" id="Yfo-di-UUx">
                             <font key="font" metaFont="smallSystem"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -192,7 +193,7 @@ Gw
                         </textFieldCell>
                     </textField>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="GbQ-nV-Qoo">
-                        <rect key="frame" x="183" y="156" width="344" height="22"/>
+                        <rect key="frame" x="137" y="156" width="390" height="22"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <textFieldCell key="cell" lineBreakMode="clipping" title="Select a content..." id="FEY-vt-7yH">
                             <font key="font" metaFont="system" size="18"/>
@@ -216,6 +217,27 @@ Gw
                         <autoresizingMask key="autoresizingMask"/>
                         <textFieldCell key="cell" alignment="center" title="Audio Output" id="6ot-Hh-OWn">
                             <font key="font" metaFont="smallSystem"/>
+                            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <popUpButton verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="GAE-0w-zFF">
+                        <rect key="frame" x="218" y="86" width="115" height="26"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" id="uri-49-e14">
+                            <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="menu"/>
+                            <menu key="menu" id="ZhM-6r-xbI"/>
+                        </popUpButtonCell>
+                        <connections>
+                            <action selector="selectScreen:" target="Voe-Tx-rLC" id="NIA-Sb-Gaz"/>
+                        </connections>
+                    </popUpButton>
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="5W9-fY-yai">
+                        <rect key="frame" x="249" y="118" width="53" height="17"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <textFieldCell key="cell" lineBreakMode="clipping" title="Screens" id="4AU-56-MBa">
+                            <font key="font" metaFont="systemThin" size="13"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>

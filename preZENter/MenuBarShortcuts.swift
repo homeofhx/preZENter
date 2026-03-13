@@ -6,6 +6,7 @@ class MenuBarShortcuts: NSObject {
     public var windowSubMenu = NSMenu()
     public var deviceSubMenu = NSMenu()
     public var screenSubMenu = NSMenu()
+    public var displaySubMenu = NSMenu()
     public var audioOutputSubMenu = NSMenu()
     
     internal private(set) var menuBarItem: NSStatusItem!
@@ -20,7 +21,6 @@ class MenuBarShortcuts: NSObject {
             icon?.isTemplate = true
             icon?.size = NSSize(width: 60, height: 18)
             button.image = icon
-            button.title = "  00:00:00"
             button.imagePosition = .imageLeft
         }
         
@@ -52,11 +52,15 @@ class MenuBarShortcuts: NSObject {
         deviceItem.submenu = deviceSubMenu
         menu.addItem(deviceItem)
         
-        menu.addItem(NSMenuItem.separator())
-        
-        let screenItem = NSMenuItem(title: "Present On...", action: nil, keyEquivalent: "")
+        let screenItem = NSMenuItem(title: "Screens", action: nil, keyEquivalent: "")
         screenItem.submenu = screenSubMenu
         menu.addItem(screenItem)
+        
+        menu.addItem(NSMenuItem.separator())
+        
+        let displayItem = NSMenuItem(title: "Present On...", action: nil, keyEquivalent: "")
+        displayItem.submenu = displaySubMenu
+        menu.addItem(displayItem)
         
         let audioOutputItem = NSMenuItem(title: "Audio Output To...", action: nil, keyEquivalent: "")
         audioOutputItem.submenu = audioOutputSubMenu

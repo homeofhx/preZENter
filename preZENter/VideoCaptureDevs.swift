@@ -8,6 +8,8 @@ class VideoCaptureDevs: NSObject {
     private var currentSession = AVCaptureSession()
     
     public func setup(popup: NSPopUpButton) {
+        popup.addItem(withTitle: "-- None --")
+        
         for device in videoDevices {
             popup.addItem(withTitle: device.localizedName)
         }

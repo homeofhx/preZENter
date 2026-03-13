@@ -8,6 +8,8 @@ class Windows: NSObject {
     private var captureTimer: Timer?
     
     public func setup(popup: NSPopUpButton) {
+        popup.addItem(withTitle: "-- None --")
+
         let windowsListInfo = CGWindowListCopyWindowInfo(CGWindowListOption(arrayLiteral: .excludeDesktopElements, .optionOnScreenOnly), kCGNullWindowID)
         
         if let windowList = windowsListInfo as? [[String: AnyObject]] {
