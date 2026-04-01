@@ -30,12 +30,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @IBAction func selectWindow(_ sender: Any) {
         setup(list: windowsList)
         videoDevs.stopVideoDevSession(liveWindow: liveWindow!)
+        screens.stopScreenSession(liveWindow: liveWindow!)
         windows.selectWindow(popup: windowsList, liveWindow: liveWindow!)
     }
     
     @IBAction func selectVideoDev(_ sender: Any) {
         setup(list: devList)
         windows.stopWindowSession(liveWindow: liveWindow!)
+        screens.stopScreenSession(liveWindow: liveWindow!)
         videoDevs.selectDev(popup: devList, liveWindow: liveWindow!)
     }
     
@@ -82,6 +84,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         audioOutputList.popUp(positioning: nil, at: point, in: sender)
     }
     
+    @IBAction func showIdleScreenSettings(_ sender: Any) {
+        IdleScreenSettings.shared.showIdleScreenSettings()
+    }
+    
     // Handlers for menu bar shortcuts
     
     @objc func menuBarPresenterTimerHandler() {
@@ -121,6 +127,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         liveWindow = liveWindow ?? LiveWindow()
         let title = list.selectedItem?.title
         liveContentIndicator.stringValue = (title == "-- None --") ? "Nothing" : (title ?? "")
+        if title == "-- None --" {
+            liveWindow?.showIdleScreen()
+        } else {
+            liveWindow?.hideIdleScreen()
+        }
     }
     
     private func setupPresenterTimer() {
@@ -176,9 +187,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 //        }
         
         AppDelegate.sharedPlaceholder = self
-        if let menu = menuBarShortcuts.menuBarItem.menu {
-            menu.delegate = self
-        }
+        if let menu = menuBarShortcuts.menuBarItem.menu { menu.delegate = self }
         windows.setup(popup: windowsList)
         videoDevs.setup(popup: devList)
         screens.setup(popup: screenList)
