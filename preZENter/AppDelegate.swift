@@ -29,23 +29,32 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     
     @IBAction func selectWindow(_ sender: Any) {
         setup(list: windowsList)
-        videoDevs.stopVideoDevSession(liveWindow: liveWindow!)
-        screens.stopScreenSession(liveWindow: liveWindow!)
-        windows.selectWindow(popup: windowsList, liveWindow: liveWindow!)
+        liveWindow!.performTransition {
+            self.applyIdleScreenState(for: self.windowsList)
+            self.videoDevs.stopVideoDevSession(liveWindow: self.liveWindow!)
+            self.screens.stopScreenSession(liveWindow: self.liveWindow!)
+            self.windows.selectWindow(popup: self.windowsList, liveWindow: self.liveWindow!)
+        }
     }
     
     @IBAction func selectVideoDev(_ sender: Any) {
         setup(list: devList)
-        windows.stopWindowSession(liveWindow: liveWindow!)
-        screens.stopScreenSession(liveWindow: liveWindow!)
-        videoDevs.selectDev(popup: devList, liveWindow: liveWindow!)
+        liveWindow!.performTransition {
+            self.applyIdleScreenState(for: self.devList)
+            self.windows.stopWindowSession(liveWindow: self.liveWindow!)
+            self.screens.stopScreenSession(liveWindow: self.liveWindow!)
+            self.videoDevs.selectDev(popup: self.devList, liveWindow: self.liveWindow!)
+        }
     }
     
     @IBAction func selectScreen(_ sender: Any) {
         setup(list: screenList)
-        windows.stopWindowSession(liveWindow: liveWindow!)
-        videoDevs.stopVideoDevSession(liveWindow: liveWindow!)
-        screens.selectScreen(popup: screenList, liveWindow: liveWindow!)
+        liveWindow!.performTransition {
+            self.applyIdleScreenState(for: self.screenList)
+            self.windows.stopWindowSession(liveWindow: self.liveWindow!)
+            self.videoDevs.stopVideoDevSession(liveWindow: self.liveWindow!)
+            self.screens.selectScreen(popup: self.screenList, liveWindow: self.liveWindow!)
+        }
     }
     
     @IBAction func refreshContents(_ sender: Any) {
@@ -127,11 +136,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         liveWindow = liveWindow ?? LiveWindow()
         let title = list.selectedItem?.title
         liveContentIndicator.stringValue = (title == "-- None --") ? "Nothing" : (title ?? "")
-        if title == "-- None --" {
-            liveWindow?.showIdleScreen()
-        } else {
-            liveWindow?.hideIdleScreen()
-        }
     }
     
     private func setupPresenterTimer() {
@@ -177,6 +181,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             menuItem.target = self
             menuItem.tag = item.tag
             menu.addItem(menuItem)
+        }
+    }
+    
+    private func applyIdleScreenState(for list: NSPopUpButton) {
+        if list.selectedItem?.title == "-- None --" {
+            liveWindow?.showIdleScreen()
+        } else {
+            liveWindow?.hideIdleScreen()
         }
     }
     

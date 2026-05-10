@@ -7,6 +7,7 @@ class LiveWindow: NSWindowController {
     private var videoDevLayer: AVCaptureVideoPreviewLayer?
     private var idleLayer: NSImageView!
     private var idleScreenTimer: Timer?
+    private var fadeOverlay: NSView!
     
     convenience init() {
         let liveWindow = NSWindow(
@@ -33,6 +34,13 @@ class LiveWindow: NSWindowController {
         idleLayer.imageScaling = .scaleProportionallyUpOrDown
         idleLayer.wantsLayer = true
         contentView.addSubview(idleLayer)
+        
+        fadeOverlay = NSView(frame: contentView.bounds)
+        fadeOverlay.autoresizingMask = [.width, .height]
+        fadeOverlay.wantsLayer = true
+        fadeOverlay.layer?.backgroundColor = NSColor.black.cgColor
+        fadeOverlay.alphaValue = 0
+        contentView.addSubview(fadeOverlay)
         
         refreshIdleScreenContents()
         idleLayer.isHidden = false
@@ -102,6 +110,21 @@ class LiveWindow: NSWindowController {
     public func refreshIdleScreenContents() {
         guard let size = window?.contentView?.bounds.size,size.width > 0, size.height > 0 else { return }
         idleLayer.image = IdleScreen.renderIdleScreenContents(for: size)
+    }
+    
+    public func performTransition(then switchContent: @escaping () -> Void) {
+        NSAnimationContext.runAnimationGroup({ context in
+            context.duration = 0.25
+            context.timingFunction = CAMediaTimingFunction(name: .easeIn)
+            fadeOverlay.animator().alphaValue = 1.0
+        }) {
+            switchContent()
+            NSAnimationContext.runAnimationGroup({ context in
+                context.duration = 0.25
+                context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+                self.fadeOverlay.animator().alphaValue = 0.0
+            })
+        }
     }
     
     private func changeIdleScreenTimerVisibility() {
