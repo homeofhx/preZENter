@@ -19,6 +19,7 @@
 		CE5228F92F4EDAF000D691F9 /* Screens.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5228F82F4EDAF000D691F9 /* Screens.swift */; };
 		CE56079D2EE50D96001BE8FE /* PresenterTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE56079C2EE50D96001BE8FE /* PresenterTimer.swift */; };
 		CE5AED5C2F00BCB3003C8399 /* Switchers.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5AED5B2F00BCB3003C8399 /* Switchers.swift */; };
+		CE98C95E2FC68B50006E0B2C /* ContentGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE98C95D2FC68B50006E0B2C /* ContentGrid.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,6 +38,7 @@
 		CE5228F82F4EDAF000D691F9 /* Screens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screens.swift; sourceTree = "<group>"; };
 		CE56079C2EE50D96001BE8FE /* PresenterTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenterTimer.swift; sourceTree = "<group>"; };
 		CE5AED5B2F00BCB3003C8399 /* Switchers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Switchers.swift; sourceTree = "<group>"; };
+		CE98C95D2FC68B50006E0B2C /* ContentGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentGrid.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,6 +85,7 @@
 				CE5AED5B2F00BCB3003C8399 /* Switchers.swift */,
 				CE5228F82F4EDAF000D691F9 /* Screens.swift */,
 				CE4EB7A82F6E0F430062E551 /* IdleScreen.swift */,
+				CE98C95D2FC68B50006E0B2C /* ContentGrid.swift */,
 			);
 			path = preZENter;
 			sourceTree = "<group>";
@@ -163,6 +166,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CE5AED5C2F00BCB3003C8399 /* Switchers.swift in Sources */,
+				CE98C95E2FC68B50006E0B2C /* ContentGrid.swift in Sources */,
 				CE350DF62E21D79C00EC2F36 /* AppDelegate.swift in Sources */,
 				CE56079D2EE50D96001BE8FE /* PresenterTimer.swift in Sources */,
 				CE4EB7A92F6E0F430062E551 /* IdleScreen.swift in Sources */,

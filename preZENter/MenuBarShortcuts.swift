@@ -37,6 +37,10 @@ class MenuBarShortcuts: NSObject {
         let menu = NSMenu()
         let appDelegate = AppDelegate.sharedPlaceholder
         
+        let refreshItem = NSMenuItem(title: "Refresh Contents", action: #selector(AppDelegate.refreshContents), keyEquivalent: "")
+        refreshItem.target = appDelegate
+        menu.addItem(refreshItem)
+        
         let timerButton = NSMenuItem(title: "Start Timer", action: #selector(AppDelegate.menuBarPresenterTimerHandler), keyEquivalent: "")
         timerButton.target = appDelegate
         menu.addItem(timerButton)
@@ -48,13 +52,13 @@ class MenuBarShortcuts: NSObject {
         windowItem.submenu = windowSubMenu
         menu.addItem(windowItem)
         
-        let deviceItem = NSMenuItem(title: "Video Capture Devices", action: nil, keyEquivalent: "")
-        deviceItem.submenu = deviceSubMenu
-        menu.addItem(deviceItem)
-        
         let screenItem = NSMenuItem(title: "Screens", action: nil, keyEquivalent: "")
         screenItem.submenu = screenSubMenu
         menu.addItem(screenItem)
+        
+        let deviceItem = NSMenuItem(title: "Video Capture Devices", action: nil, keyEquivalent: "")
+        deviceItem.submenu = deviceSubMenu
+        menu.addItem(deviceItem)
         
         menu.addItem(NSMenuItem.separator())
         
@@ -65,12 +69,6 @@ class MenuBarShortcuts: NSObject {
         let audioOutputItem = NSMenuItem(title: "Audio Output To...", action: nil, keyEquivalent: "")
         audioOutputItem.submenu = audioOutputSubMenu
         menu.addItem(audioOutputItem)
-        
-        menu.addItem(NSMenuItem.separator())
-        
-        let refreshItem = NSMenuItem(title: "Refresh Contents", action: #selector(AppDelegate.refreshContents), keyEquivalent: "")
-        refreshItem.target = appDelegate
-        menu.addItem(refreshItem)
         
         menuBarItem.menu = menu
     }

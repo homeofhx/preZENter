@@ -5,47 +5,30 @@ import CoreMediaIO
 class VideoCaptureDevs: NSObject {
     
     private var videoDevices: [AVCaptureDevice] = []
-    private var currentDevice: AVCaptureDevice!
+    private var currentDevice: AVCaptureDevice?
     private var currentSession = AVCaptureSession()
     
     override init() {
         super.init()
         VideoCaptureDevs.unlockiOSScreenCapture()
-    }
-    
-    public func setup(popup: NSPopUpButton) {
         videoDevices = enumerateAllVideoDevs()
-        popup.addItem(withTitle: "-- None --")
-        
-        for device in videoDevices {
-            popup.addItem(withTitle: device.localizedName)
-        }
     }
     
-    public func refreshDevs(popup: NSPopUpButton) {
-        while popup.numberOfItems > 1 {
-            popup.removeItem(at: 1)
-        }
-        
+    public func getDeviceNames() -> [String] {
         VideoCaptureDevs.unlockiOSScreenCapture()
         videoDevices = enumerateAllVideoDevs()
-        popup.addItem(withTitle: "-- None --")
-        for device in videoDevices {
-            popup.addItem(withTitle: device.localizedName)
-        }
+        return videoDevices.map { $0.localizedName }
     }
     
-    public func selectDev(popup: NSPopUpButton, liveWindow: LiveWindow) {
+    public func selectDev(at index: Int, liveWindow: LiveWindow) {
         stopVideoDevSession(liveWindow: liveWindow)
         
         for input in currentSession.inputs {
             currentSession.removeInput(input)
         }
         
-        let selectedIndex = popup.indexOfSelectedItem - 1
-        guard selectedIndex >= 0, selectedIndex < videoDevices.count else { return }
-        
-        currentDevice = videoDevices[selectedIndex]
+        guard index >= 0, index < videoDevices.count else { return }
+        currentDevice = videoDevices[index]
         showLiveView(liveWindow: liveWindow)
     }
     
@@ -81,7 +64,7 @@ class VideoCaptureDevs: NSObject {
         let videoDevs = AVCaptureDevice.devices(for: .video)
         let muxedDevs = AVCaptureDevice.devices(for: .muxed)
         var seen = Set<String>()
-        return (videoDevs + muxedDevs).filter{seen.insert($0.uniqueID).inserted}
+        return (videoDevs + muxedDevs).filter { seen.insert($0.uniqueID).inserted }
     }
     
 }

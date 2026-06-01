@@ -13,7 +13,7 @@ class IdleScreenSettings {
     private let defaults = UserDefaults.standard
     
     var message: String {
-        get { return defaults.string(forKey: keys.message) ?? "We will start shortly\nPlease stand by" }
+        get { return defaults.string(forKey: keys.message) ?? "We will start shortly.\nPlease stand by." }
         set { defaults.set(newValue, forKey: keys.message) }
     }
     
@@ -84,7 +84,7 @@ class IdleScreenSettings {
             NotificationCenter.default.post(name: .idleScreenSettingsDidChange, object: nil)
             
         case .alertThirdButtonReturn:   // Reset to Default
-            message  = "We will start shortly\nPlease stand by"
+            message  = "We will start shortly.\nPlease stand by."
             messageFontSize = 100
             showTime = false
             NotificationCenter.default.post(name: .idleScreenSettingsDidChange, object: nil)

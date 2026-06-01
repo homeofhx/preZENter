@@ -8,6 +8,7 @@ class LiveWindow: NSWindowController {
     private var idleLayer: NSImageView!
     private var idleScreenTimer: Timer?
     private var fadeOverlay: NSView!
+    private var idleScreenActiveStatus = false
     
     convenience init() {
         let liveWindow = NSWindow(
@@ -63,7 +64,7 @@ class LiveWindow: NSWindowController {
     }
     
     public func updateWindowLayerImage(_ image: NSImage) {
-        if !idleLayer.isHidden { hideIdleScreen() }
+        guard !idleScreenActiveStatus else { return }
         windowLayer.image = image
     }
     
@@ -96,6 +97,7 @@ class LiveWindow: NSWindowController {
     }
     
     public func showIdleScreen() {
+        idleScreenActiveStatus = true
         refreshIdleScreenContents()
         idleLayer.isHidden = false
         changeIdleScreenTimerVisibility()
@@ -103,6 +105,7 @@ class LiveWindow: NSWindowController {
     }
     
     public func hideIdleScreen() {
+        idleScreenActiveStatus = false
         idleLayer.isHidden = true
         hideIdleScreenTimer()
     }

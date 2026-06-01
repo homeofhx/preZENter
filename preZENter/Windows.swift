@@ -7,45 +7,30 @@ class Windows: NSObject {
     private let minWindowBound: CGFloat = 125
     private var captureTimer: Timer?
     
-    public func setup(popup: NSPopUpButton) {
-        popup.addItem(withTitle: "-- None --")
-
-        let windowsListInfo = CGWindowListCopyWindowInfo(CGWindowListOption(arrayLiteral: .excludeDesktopElements, .optionOnScreenOnly), kCGNullWindowID)
+    public func getItems() -> [(title: String, windowID: CGWindowID)] {
+        var result: [(title: String, windowID: CGWindowID)] = []
         
-        if let windowList = windowsListInfo as? [[String: AnyObject]] {
-            for window in windowList {
-                let windowBounds = window[kCGWindowBounds as String] as? [String: CGFloat]
-                let windowBoundsAsRectangle = CGRect(dictionaryRepresentation: windowBounds! as CFDictionary)
-                let width = windowBoundsAsRectangle!.width
-                let height = windowBoundsAsRectangle!.height
-                
-                if let appContent = window[kCGWindowName as String] as? String,
-                    let appName = window[kCGWindowOwnerName as String] as? String,
-                    let windowID = window[kCGWindowNumber as String] as? NSNumber,
-                    appContent.count != 0, appName != "preZENter",
-                    width >= minWindowBound, height >= minWindowBound {
-                    popup.addItem(withTitle: "\(appName): \(appContent)")
-                    popup.lastItem?.representedObject = windowID.uint32Value
-                }
-            }
-        }
-    }
-    
-    public func refreshWindows(popup: NSPopUpButton) {
-        while popup.numberOfItems > 1 {
-            popup.removeItem(at: 1)
+        let listInfo = CGWindowListCopyWindowInfo(CGWindowListOption(arrayLiteral: .excludeDesktopElements, .optionOnScreenOnly), kCGNullWindowID)
+        
+        guard let windowList = listInfo as? [[String: AnyObject]] else { return result }
+        
+        for window in windowList {
+            guard let boundsDict = window[kCGWindowBounds as String] as? [String: CGFloat] else { continue }
+            guard let bounds = CGRect(dictionaryRepresentation: boundsDict as CFDictionary) else { continue }
+            guard bounds.width >= minWindowBound, bounds.height >= minWindowBound else { continue }
+            guard let content = window[kCGWindowName as String] as? String, !content.isEmpty else { continue }
+            guard let appName = window[kCGWindowOwnerName as String] as? String, appName != "preZENter" else { continue }
+            guard let windowNum = window[kCGWindowNumber as String] as? NSNumber else { continue }
+            
+            result.append((title: "\(appName): \(content)", windowID: windowNum.uint32Value))
         }
         
-        setup(popup: popup)
+        return result
     }
     
-    public func selectWindow(popup: NSPopUpButton, liveWindow: LiveWindow) {
+    public func selectWindow(id: CGWindowID, liveWindow: LiveWindow) {
         stopWindowSession(liveWindow: liveWindow)
-        
-        guard let selectedWindow = popup.selectedItem,
-            let windowID = selectedWindow.representedObject as? CGWindowID else { return }
-        
-        currentWindowID = windowID
+        currentWindowID = id
         showCurrentWindowLiveView(liveWindow: liveWindow)
     }
     
@@ -57,22 +42,18 @@ class Windows: NSObject {
     }
     
     private func captureWindowImage(windowID: CGWindowID) -> NSImage? {
-        let imageRef = CGWindowListCreateImage(.null, .optionIncludingWindow, windowID, [.bestResolution, .boundsIgnoreFraming])
-        
-        if let windowImage = imageRef {
-            return NSImage(cgImage: windowImage, size: NSZeroSize)
-        }
-        
-        return nil
+        guard let ref = CGWindowListCreateImage(.null, .optionIncludingWindow, windowID, [.bestResolution, .boundsIgnoreFraming]) else { return nil }
+        return NSImage(cgImage: ref, size: NSZeroSize)
     }
     
     private func showCurrentWindowLiveView(liveWindow: LiveWindow) {
         captureTimer?.invalidate()
         
-        captureTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 35.0, repeats: true) { [weak self] timer in
+        captureTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 35.0, repeats: true) { [weak self] _ in
             guard let self = self else { return }
             guard let windowID = self.currentWindowID,
-                let windowImage = self.captureWindowImage(windowID: windowID) else {
+                let windowImage = self.captureWindowImage(windowID: windowID)
+                else {
                     self.stopWindowSession(liveWindow: liveWindow)
                     return
             }
