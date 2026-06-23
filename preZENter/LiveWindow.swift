@@ -4,18 +4,18 @@ import AVFoundation
 class LiveWindow: NSWindowController {
     
     private var windowLayer: NSImageView!
-    private var videoDevLayer: AVCaptureVideoPreviewLayer?
+    private var videoDevPreview: VideoDevPreview!
     private var idleLayer: NSImageView!
     private var idleScreenTimer: Timer?
     private var fadeOverlay: NSView!
     private var idleScreenActiveStatus = false
+    private var lifecycleObservers: [NSObjectProtocol] = []
     
     convenience init() {
-        let liveWindow = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 1024, height: 576),
-            styleMask: [.titled, .closable, .resizable, .miniaturizable],
-            backing: .buffered,
-            defer: false)
+        let liveWindow = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1024, height: 576),
+                                  styleMask: [.titled, .closable, .resizable, .miniaturizable],
+                                  backing: .buffered,
+                                  defer: false)
         liveWindow.title = "preZENter - Live Window"
         liveWindow.center()
         liveWindow.backgroundColor = NSColor.black
@@ -29,6 +29,11 @@ class LiveWindow: NSWindowController {
         windowLayer.imageScaling = .scaleProportionallyUpOrDown
         windowLayer.wantsLayer = true
         contentView.addSubview(windowLayer)
+        
+        videoDevPreview = VideoDevPreview(frame: contentView.bounds)
+        videoDevPreview.autoresizingMask = [.width, .height]
+        videoDevPreview.isHidden = true
+        contentView.addSubview(videoDevPreview)
         
         idleLayer = NSImageView(frame: contentView.bounds)
         idleLayer.autoresizingMask = [.width, .height]
@@ -46,21 +51,26 @@ class LiveWindow: NSWindowController {
         refreshIdleScreenContents()
         idleLayer.isHidden = false
         
-        NotificationCenter.default.addObserver(
-            forName: NSWindow.didResizeNotification,
-            object: self.window,
-            queue: .main
-        ) { [weak self] _ in self?.refreshIdleScreenContents() }
+        lifecycleObservers.append(NotificationCenter.default.addObserver(forName: NSWindow.didResizeNotification,
+                                               object: self.window,
+                                               queue: .main
+        ) { [weak self] _ in self?.refreshIdleScreenContents() })
         
-        NotificationCenter.default.addObserver(
-            forName: .idleScreenSettingsDidChange,
-            object: nil,
-            queue: .main
+        lifecycleObservers.append(NotificationCenter.default.addObserver(forName: .idleScreenSettingsDidChange,
+                                               object: nil,
+                                               queue: .main
         ) { [weak self] _ in
             guard let self = self else { return }
             self.refreshIdleScreenContents()
             if !self.idleLayer.isHidden { self.changeIdleScreenTimerVisibility() }
-        }
+        })
+    }
+    
+    // Memory leak prevention
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+        for observer in lifecycleObservers { NotificationCenter.default.removeObserver(observer) }
+        idleScreenTimer?.invalidate()
     }
     
     public func updateWindowLayerImage(_ image: NSImage) {
@@ -72,27 +82,16 @@ class LiveWindow: NSWindowController {
         stopLiveView()
         hideIdleScreen()
         
-        let newPreviewLayer = AVCaptureVideoPreviewLayer(session: session)
-        newPreviewLayer.videoGravity = .resizeAspect
+        videoDevPreview.previewLayer.session = session
+        videoDevPreview.previewLayer.videoGravity = .resizeAspect
+        videoDevPreview.isHidden = false
         
-        if let contentView = self.window?.contentView {
-            newPreviewLayer.frame = contentView.bounds
-            contentView.layer = newPreviewLayer
-            contentView.wantsLayer = true
-            NotificationCenter.default.addObserver(
-            forName: NSWindow.didResizeNotification,
-            object: self.window,
-            queue: .main) {
-                [weak self] _ in self?.videoDevLayer?.frame = contentView.bounds
-            }
-        }
-        
-        videoDevLayer = newPreviewLayer
         self.window?.makeKeyAndOrderFront(nil)
     }
     
     public func stopLiveView() {
-        videoDevLayer = nil
+        videoDevPreview.previewLayer.session = nil
+        videoDevPreview.isHidden = true
         windowLayer.image = nil
     }
     
@@ -143,6 +142,7 @@ class LiveWindow: NSWindowController {
         idleScreenTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             self?.refreshIdleScreenContents()
         }
+        
         RunLoop.current.add(idleScreenTimer!, forMode: .common)
     }
     
@@ -150,4 +150,31 @@ class LiveWindow: NSWindowController {
         idleScreenTimer?.invalidate()
         idleScreenTimer = nil
     }
+    
+}
+
+// MARK: - Video dev subview
+private class VideoDevPreview: NSView {
+    
+    var previewLayer: AVCaptureVideoPreviewLayer {
+        guard let layer = layer as? AVCaptureVideoPreviewLayer else {
+            fatalError("VideoPreviewView's layer must be an AVCaptureVideoPreviewLayer")
+        }
+        
+        return layer
+    }
+    
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        wantsLayer = true
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) not implemented")
+    }
+    
+    override func makeBackingLayer() -> CALayer {
+        return AVCaptureVideoPreviewLayer()
+    }
+    
 }

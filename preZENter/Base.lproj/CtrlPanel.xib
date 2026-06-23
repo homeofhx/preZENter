@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="24765" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaDFRPlugin" version="14460.1"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14460.31"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaDFRPlugin" version="24901"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24765"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
         <capability name="the Touch Bar" minToolsVersion="8.1" minSystemVersion="10.12.2" requiredIntegratedClassName="NSTouchBar"/>
     </dependencies>
@@ -17,7 +17,7 @@
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="preZENter" customModuleProvider="target">
             <connections>
-                <outlet property="contentPicker" destination="1M0-dv-hBR" id="tVj-kp-Y9m"/>
+                <outlet property="contentChooser" destination="1M0-dv-hBR" id="tVj-kp-Y9m"/>
                 <outlet property="liveContentIndicator" destination="GbQ-nV-Qoo" id="370-TU-lPS"/>
                 <outlet property="timerText" destination="MSB-Au-jzZ" id="654-Ye-kSj"/>
                 <outlet property="window" destination="QvC-M9-y7g" id="mG6-kV-jCy"/>
@@ -61,122 +61,180 @@ Gw
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
             <windowPositionMask key="initialPositionMask" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="560" y="100" width="675" height="350"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1728" height="1084"/>
             <value key="minSize" type="size" width="675" height="350"/>
             <value key="maxSize" type="size" width="675" height="350"/>
             <view key="contentView" wantsLayer="YES" id="EiT-Mj-1SZ">
                 <rect key="frame" x="0.0" y="0.0" width="675" height="350"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="mdN-2a-1K9">
+                    <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="mdN-2a-1K9">
                         <rect key="frame" x="23" y="316" width="113" height="24"/>
-                        <autoresizingMask key="autoresizingMask"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="109" id="KjA-kA-AgI"/>
+                        </constraints>
                         <textFieldCell key="cell" lineBreakMode="clipping" title="Presenting:" id="60X-fQ-hvJ">
                             <font key="font" metaFont="systemBold" size="20"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
-                    <button toolTip="Refresh the Application Window List, Video Capture Device List and Screen List" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="eQc-ff-vfg">
-                        <rect key="frame" x="619" y="250" width="47" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <button toolTip="Refresh items in Content Chooser" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="eQc-ff-vfg">
+                        <rect key="frame" x="620" y="257" width="35" height="32"/>
                         <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSRefreshTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="W0X-aR-1kQ">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="35" id="iD5-9Y-Kex"/>
+                            <constraint firstAttribute="height" constant="32" id="rLD-rx-Pbx"/>
+                        </constraints>
                         <accessibility description="Refresh List button"/>
                         <connections>
                             <action selector="refreshContents:" target="Voe-Tx-rLC" id="eeh-v3-Uxo"/>
                         </connections>
                     </button>
-                    <button toolTip="Start/pause the Presenter Timer" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="JFM-cO-iKH">
-                        <rect key="frame" x="619" y="199" width="47" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <buttonCell key="cell" type="push" title="⏱" bezelStyle="rounded" imagePosition="overlaps" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="DKH-TV-3or">
+                    <button toolTip="Move Live Window to selected display" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="H3K-8x-zT7">
+                        <rect key="frame" x="620" y="213" width="35" height="32"/>
+                        <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSEnterFullScreenTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="W68-BF-3KV">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
-                        <connections>
-                            <action selector="presenterTimerButtonPressed:" target="Voe-Tx-rLC" id="JCa-7I-UxQ"/>
-                        </connections>
-                    </button>
-                    <button toolTip="Move Live Window to selected screen" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="H3K-8x-zT7">
-                        <rect key="frame" x="619" y="148" width="47" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <buttonCell key="cell" type="push" title="🖥" bezelStyle="rounded" imagePosition="overlaps" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="W68-BF-3KV">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                        </buttonCell>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="32" id="KXV-n7-5Dw"/>
+                        </constraints>
                         <connections>
                             <action selector="showScreenList:" target="Voe-Tx-rLC" id="sZe-67-ZZe"/>
                         </connections>
                     </button>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="GbQ-nV-Qoo">
+                    <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="GbQ-nV-Qoo">
                         <rect key="frame" x="137" y="316" width="405" height="24"/>
-                        <autoresizingMask key="autoresizingMask"/>
                         <textFieldCell key="cell" lineBreakMode="clipping" title="Select a content..." id="FEY-vt-7yH">
                             <font key="font" metaFont="system" size="18"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
-                    <button toolTip="Switch the audio output source" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="PD8-V0-jEr">
-                        <rect key="frame" x="619" y="97" width="47" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <buttonCell key="cell" type="push" title="🔈" bezelStyle="rounded" imagePosition="overlaps" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Gy1-Rn-x0q">
+                    <button toolTip="Switch the audio output device" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="PD8-V0-jEr">
+                        <rect key="frame" x="620" y="169" width="35" height="32"/>
+                        <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSTouchBarAudioOutputVolumeHighTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Gy1-Rn-x0q">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="32" id="fso-aO-22l"/>
+                        </constraints>
                         <connections>
                             <action selector="showAudioOutputDeviceList:" target="Voe-Tx-rLC" id="PXm-Ep-E8z"/>
                         </connections>
                     </button>
-                    <button toolTip="Set the text on the Idle Screen" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="HCe-Wi-TMr">
-                        <rect key="frame" x="619" y="46" width="47" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSFontPanel" imagePosition="overlaps" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="bY7-kG-aiP">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                        </buttonCell>
-                        <connections>
-                            <action selector="showIdleScreenSettings:" target="Voe-Tx-rLC" id="9ru-HX-sMv"/>
-                        </connections>
-                    </button>
-                    <tabView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1M0-dv-hBR" userLabel="Content Chooser">
-                        <rect key="frame" x="13" y="10" width="604" height="302"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                    <tabView translatesAutoresizingMaskIntoConstraints="NO" id="1M0-dv-hBR" userLabel="Content Chooser">
+                        <rect key="frame" x="13" y="10" width="594" height="302"/>
                         <font key="font" metaFont="system"/>
                         <tabViewItems>
                             <tabViewItem label="App Window" identifier="" id="DF7-O5-vTD">
-                                <view key="view" ambiguous="YES" id="c8B-xS-5j8">
-                                    <rect key="frame" x="10" y="33" width="584" height="256"/>
+                                <view key="view" id="c8B-xS-5j8">
+                                    <rect key="frame" x="10" y="33" width="574" height="256"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 </view>
                             </tabViewItem>
                             <tabViewItem label="Screen" identifier="" id="fXU-5O-55q">
                                 <view key="view" id="39a-gU-FJT">
-                                    <rect key="frame" x="10" y="33" width="581" height="256"/>
+                                    <rect key="frame" x="10" y="33" width="575" height="256"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 </view>
                             </tabViewItem>
                             <tabViewItem label="Video Device" identifier="" id="Y4C-93-eYd" userLabel="Video Device">
                                 <view key="view" id="ib1-XW-hf2">
-                                    <rect key="frame" x="10" y="33" width="581" height="256"/>
+                                    <rect key="frame" x="10" y="33" width="575" height="256"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 </view>
                             </tabViewItem>
                         </tabViewItems>
                     </tabView>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="MSB-Au-jzZ">
+                    <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="MSB-Au-jzZ">
                         <rect key="frame" x="543" y="316" width="114" height="24"/>
-                        <autoresizingMask key="autoresizingMask"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="110" id="jRW-CT-cTB"/>
+                        </constraints>
                         <textFieldCell key="cell" lineBreakMode="clipping" alignment="center" title="00:00:00" id="WcO-ji-1vd">
                             <font key="font" metaFont="system" size="20"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
+                    <button toolTip="Set text on Idle Screen" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="HCe-Wi-TMr">
+                        <rect key="frame" x="620" y="81" width="35" height="32"/>
+                        <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSFontPanel" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="bY7-kG-aiP">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="32" id="diR-Qj-IaJ"/>
+                        </constraints>
+                        <connections>
+                            <action selector="showIdleScreenSettings:" target="Voe-Tx-rLC" id="9ru-HX-sMv"/>
+                        </connections>
+                    </button>
+                    <button toolTip="Stop the current presented content" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="guQ-BZ-mIA">
+                        <rect key="frame" x="620" y="37" width="35" height="32"/>
+                        <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSTouchBarRecordStopTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="UX0-cK-EnQ">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="32" id="jgN-Is-XBk"/>
+                        </constraints>
+                        <connections>
+                            <action selector="stopPresenting:" target="Voe-Tx-rLC" id="ihY-2d-pRh"/>
+                        </connections>
+                    </button>
+                    <button toolTip="Start/pause the Presenter Timer" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="JFM-cO-iKH">
+                        <rect key="frame" x="620" y="125" width="35" height="32"/>
+                        <buttonCell key="cell" type="push" bezelStyle="rounded" image="NSTouchBarAlarmTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="DKH-TV-3or">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="32" id="G7r-JE-iFG"/>
+                        </constraints>
+                        <connections>
+                            <action selector="presenterTimerButtonPressed:" target="Voe-Tx-rLC" id="JCa-7I-UxQ"/>
+                        </connections>
+                    </button>
                 </subviews>
+                <constraints>
+                    <constraint firstItem="H3K-8x-zT7" firstAttribute="leading" secondItem="PD8-V0-jEr" secondAttribute="leading" id="1rf-x0-Wuo"/>
+                    <constraint firstItem="HCe-Wi-TMr" firstAttribute="leading" secondItem="guQ-BZ-mIA" secondAttribute="leading" id="2oY-Pt-UaD"/>
+                    <constraint firstItem="GbQ-nV-Qoo" firstAttribute="leading" secondItem="mdN-2a-1K9" secondAttribute="trailing" constant="5" id="6ZW-Fq-paH"/>
+                    <constraint firstItem="PD8-V0-jEr" firstAttribute="trailing" secondItem="JFM-cO-iKH" secondAttribute="trailing" id="AE0-hv-uZm"/>
+                    <constraint firstItem="guQ-BZ-mIA" firstAttribute="top" secondItem="HCe-Wi-TMr" secondAttribute="bottom" constant="12" symbolic="YES" id="B4s-EK-Usv"/>
+                    <constraint firstItem="JFM-cO-iKH" firstAttribute="top" secondItem="PD8-V0-jEr" secondAttribute="bottom" constant="12" symbolic="YES" id="BJr-0c-ORn"/>
+                    <constraint firstItem="MSB-Au-jzZ" firstAttribute="trailing" secondItem="eQc-ff-vfg" secondAttribute="trailing" id="Bof-dD-ZQW"/>
+                    <constraint firstItem="eQc-ff-vfg" firstAttribute="leading" secondItem="1M0-dv-hBR" secondAttribute="trailing" constant="20" id="Dgy-Gx-tc0"/>
+                    <constraint firstItem="mdN-2a-1K9" firstAttribute="top" secondItem="GbQ-nV-Qoo" secondAttribute="top" id="GOJ-jI-zSh"/>
+                    <constraint firstItem="mdN-2a-1K9" firstAttribute="leading" secondItem="EiT-Mj-1SZ" secondAttribute="leading" constant="25" id="HCX-Yb-5gb"/>
+                    <constraint firstItem="H3K-8x-zT7" firstAttribute="trailing" secondItem="PD8-V0-jEr" secondAttribute="trailing" id="L07-bw-pgC"/>
+                    <constraint firstItem="1M0-dv-hBR" firstAttribute="leading" secondItem="EiT-Mj-1SZ" secondAttribute="leading" constant="20" symbolic="YES" id="NFK-tL-HCl"/>
+                    <constraint firstItem="HCe-Wi-TMr" firstAttribute="top" secondItem="JFM-cO-iKH" secondAttribute="bottom" constant="12" symbolic="YES" id="Nuz-HM-8Uc"/>
+                    <constraint firstItem="eQc-ff-vfg" firstAttribute="top" secondItem="MSB-Au-jzZ" secondAttribute="bottom" constant="27" id="REh-Dy-o2Z"/>
+                    <constraint firstItem="JFM-cO-iKH" firstAttribute="leading" secondItem="HCe-Wi-TMr" secondAttribute="leading" id="SZg-Dk-t9E"/>
+                    <constraint firstItem="MSB-Au-jzZ" firstAttribute="leading" secondItem="GbQ-nV-Qoo" secondAttribute="trailing" constant="5" id="Sgz-sE-LrP"/>
+                    <constraint firstItem="mdN-2a-1K9" firstAttribute="baseline" secondItem="GbQ-nV-Qoo" secondAttribute="baseline" id="Vi2-8L-ShS"/>
+                    <constraint firstItem="eQc-ff-vfg" firstAttribute="leading" secondItem="H3K-8x-zT7" secondAttribute="leading" id="WwT-oG-NcE"/>
+                    <constraint firstItem="HCe-Wi-TMr" firstAttribute="trailing" secondItem="guQ-BZ-mIA" secondAttribute="trailing" id="b5G-Km-31c"/>
+                    <constraint firstItem="H3K-8x-zT7" firstAttribute="top" secondItem="eQc-ff-vfg" secondAttribute="bottom" constant="12" symbolic="YES" id="bYs-Go-nxu"/>
+                    <constraint firstItem="eQc-ff-vfg" firstAttribute="trailing" secondItem="H3K-8x-zT7" secondAttribute="trailing" id="etM-C5-kDi"/>
+                    <constraint firstItem="PD8-V0-jEr" firstAttribute="top" secondItem="H3K-8x-zT7" secondAttribute="bottom" constant="12" symbolic="YES" id="iG4-Ve-kgs"/>
+                    <constraint firstAttribute="trailing" secondItem="MSB-Au-jzZ" secondAttribute="trailing" constant="20" symbolic="YES" id="nWo-NH-tU9"/>
+                    <constraint firstItem="JFM-cO-iKH" firstAttribute="trailing" secondItem="HCe-Wi-TMr" secondAttribute="trailing" id="ocI-Fd-XwP"/>
+                    <constraint firstAttribute="bottom" secondItem="1M0-dv-hBR" secondAttribute="bottom" constant="20" symbolic="YES" id="pLd-ko-J5M"/>
+                    <constraint firstItem="mdN-2a-1K9" firstAttribute="firstBaseline" secondItem="MSB-Au-jzZ" secondAttribute="firstBaseline" id="phO-3E-vHW"/>
+                    <constraint firstItem="mdN-2a-1K9" firstAttribute="top" secondItem="EiT-Mj-1SZ" secondAttribute="top" constant="10" id="qUc-cD-24a"/>
+                    <constraint firstItem="GbQ-nV-Qoo" firstAttribute="baseline" secondItem="MSB-Au-jzZ" secondAttribute="baseline" id="tPM-kg-Ghd"/>
+                    <constraint firstItem="PD8-V0-jEr" firstAttribute="leading" secondItem="JFM-cO-iKH" secondAttribute="leading" id="ulK-Xj-tvi"/>
+                    <constraint firstItem="1M0-dv-hBR" firstAttribute="top" secondItem="mdN-2a-1K9" secondAttribute="bottom" constant="10" id="v40-Fm-X1F"/>
+                </constraints>
             </view>
             <point key="canvasLocation" x="166.5" y="514"/>
         </window>
@@ -185,9 +243,8 @@ Gw
                 <touchBarSpacerItem identifier="NSTouchBarItemIdentifierFlexibleSpace" id="j8b-Ae-2XO"/>
                 <touchBarItem id="YVD-bB-Z1n">
                     <viewController key="viewController" id="Jn3-KC-eKO">
-                        <textField key="view" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="CJg-X6-7EP">
-                            <rect key="frame" x="0.0" y="0.0" width="161" height="19"/>
-                            <autoresizingMask key="autoresizingMask"/>
+                        <textField key="view" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="CJg-X6-7EP">
+                            <rect key="frame" x="0.0" y="0.0" width="157" height="19"/>
                             <textFieldCell key="cell" lineBreakMode="clipping" title="preZENter is running" id="SGg-ff-vWV">
                                 <font key="font" usesAppearanceFont="YES"/>
                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -203,7 +260,11 @@ Gw
         </touchBar>
     </objects>
     <resources>
+        <image name="NSEnterFullScreenTemplate" width="20" height="19"/>
         <image name="NSFontPanel" width="32" height="32"/>
-        <image name="NSRefreshTemplate" width="11" height="15"/>
+        <image name="NSRefreshTemplate" width="18" height="21"/>
+        <image name="NSTouchBarAlarmTemplate" width="19" height="20"/>
+        <image name="NSTouchBarAudioOutputVolumeHighTemplate" width="27" height="19"/>
+        <image name="NSTouchBarRecordStopTemplate" width="18" height="17"/>
     </resources>
 </document>

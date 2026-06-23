@@ -8,44 +8,75 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @IBOutlet weak var window: NSWindow!
     @IBOutlet weak var liveContentIndicator: NSTextField!
     @IBOutlet weak var timerText: NSTextField!
-    @IBOutlet weak var contentPicker: NSTabView!
+    @IBOutlet weak var contentChooser: NSTabView!
     
-    public static var sharedPlaceholder: AppDelegate!
-
-    // Data model for contents
-    // Index 0: "--None--"; index 1+: actual content; ...Items[i]: index i+1
+    private enum ContentSource: Equatable {
+        case window(Int), screen(Int), video(Int)
+        
+        var dataIndex: Int {
+            switch self { case .window(let index), .screen(let index), .video(let index): return index }
+        }
+        
+        var title: String {
+            switch self {
+            case .window: return "window"
+            case .screen: return "screen"
+            case .video: return "video"
+            }
+        }
+    }
+    
+    // MARK: - Select indices
+    
+    private var selectedSource: ContentSource? = nil
+    
+    private var selectedWindowIndex: Int? {
+        get { if case .window(let index) = selectedSource { return index } else { return nil } }
+        set { selectedSource = newValue.map { .window($0) } }
+    }
+    
+    private var selectedScreenIndex: Int? {
+        get { if case .screen(let index) = selectedSource { return index } else { return nil } }
+        set { selectedSource = newValue.map { .screen($0) } }
+    }
+    
+    private var selectedVideoIndex: Int? {
+        get { if case .video(let index) = selectedSource { return index } else { return nil } }
+        set { selectedSource = newValue.map { .video($0) } }
+    }
+    
+    // MARK: - Data model
+    // Index - 0: "--None--"; index 1+: actual content; ...Items[i]: index "i+1"
     private var windowItems: [(title: String, windowID: CGWindowID)] = []
     private var screenItems: [(title: String, displayID: CGDirectDisplayID)] = []
     private var videoItems: [String] = []
     
-    // Components
+    // MARK: - Components
     private var liveWindow: LiveWindow?
     private var videoDevs = VideoCaptureDevs()
     private var windows = Windows()
     private var screens = Screens()
-    private let presenterTimer = PresenterTimer()
-    private var isTimerRunning = false
     private var menuBarShortcuts = MenuBarShortcuts()
+    private var isTimerRunning = false
+    
+    private let presenterTimer = PresenterTimer()
     private let switchers = Switchers()
     
-    // Grid views
+    // MARK: - Grid views
     private var windowGridView: ContentGridView?
     private var screenGridView: ContentGridView?
     private var videoGridView: ContentGridView?
     
-    // Selected content's index (0 = None; 1+ = content)
-    private var selectedWindowIndex: Int? = nil
-    private var selectedScreenIndex: Int? = nil
-    private var selectedVideoIndex: Int? = nil
+    // MARK: - XIB action connections
     
     @IBAction func getLatestRelease(_ sender: AnyObject) {
         NSWorkspace.shared.open(URL(string: "https://github.com/homeofhx/preZENter/releases/latest")!)
     }
     
     @IBAction func refreshContents(_ sender: Any) {
-        windowItems = windows.getItems()
+        windowItems = windows.getVisibleWindows()
         videoItems = videoDevs.getDeviceNames()
-        screenItems = screens.getItems()
+        screenItems = screens.getAllScreens()
         refreshMenuBarItems()
         refreshAllGrids()
     }
@@ -55,8 +86,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
     
     @IBAction func showScreenList(_ sender: NSButton) {
-        let menu = NSMenu(title: "Select a Screen")
-        let data = NSScreen.screens.enumerated().map { (switchers.getScreenNameOrResolution(screen: $0.element), $0.offset) }
+        let menu = NSMenu(title: "Select a Display")
+        let data = NSScreen.screens.enumerated().map { (switchers.getDisplayInfo(screen: $0.element), $0.offset) }
         updateSubMenuItems(menu, from: data, action: #selector(menuBarScreenSwitcherHandler(_:)))
         menu.popUp(positioning: nil, at: NSPoint(x: 0, y: sender.frame.height), in: sender)
     }
@@ -64,6 +95,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @IBAction func showAudioOutputDeviceList(_ sender: NSButton) {
         let menu = NSMenu(title: "Select an Audio Output Device")
         let deviceIDs = switchers.getAudioOutputDeviceIDs()
+        
         if deviceIDs.isEmpty {
             menu.addItem(withTitle: "No Output Devices Found", action: nil, keyEquivalent: "")
         } else {
@@ -78,98 +110,122 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         IdleScreenSettings.shared.showIdleScreenSettings()
     }
     
-    // Select input source
+    @IBAction func stopPresenting(_ sender: Any) {
+        let wasPresenting = selectedSource != nil
+        deselectAllContent()
+        setupLiveWindow(selectedTitle: nil)
+        
+        guard wasPresenting, let lw = liveWindow else {
+            liveWindow?.showIdleScreen()
+            return
+        }
+        
+        lw.performTransition {
+            self.stopAllSessions()
+            lw.showIdleScreen()
+        }
+    }
     
-    private func selectWindowItem(at index: Int) {
-        let title = index == 0 ? nil : windowItems[safe: index - 1]?.title
+    // MARK: - Select input source
+    
+    private func selectSource(_ source: ContentSource?) {
+        let title: String?
+        
+        switch source {
+        case .window(let i): title = windowItems[safe: i - 1]?.title
+        case .screen(let i): title = screenItems[safe: i - 1]?.title
+        case .video(let i): title = videoItems[safe: i - 1]
+        case .none: title = nil
+        }
+        
         setupLiveWindow(selectedTitle: title)
-        liveWindow!.performTransition {
-            if index == 0 {
-                self.windows.stopWindowSession(liveWindow: self.liveWindow!)
-                self.videoDevs.stopVideoDevSession(liveWindow: self.liveWindow!)
-                self.screens.stopScreenSession(liveWindow: self.liveWindow!)
+        
+        liveWindow?.performTransition {
+            self.stopAllSessions()
+            
+            guard let source = source else {
                 self.liveWindow?.showIdleScreen()
-            } else if let id = self.windowItems[safe: index - 1]?.windowID {
+                return
+            }
+            
+            switch source {
+            case .window(let i):
+                guard let id = self.windowItems[safe: i - 1]?.windowID else { self.handleSourceLost(); return }
                 self.liveWindow?.hideIdleScreen()
-                self.videoDevs.stopVideoDevSession(liveWindow: self.liveWindow!)
-                self.screens.stopScreenSession(liveWindow: self.liveWindow!)
                 self.windows.selectWindow(id: id, liveWindow: self.liveWindow!)
-            }
-        }
-    }
-    
-    private func selectScreenItem(at index: Int) {
-        let title = index == 0 ? nil : screenItems[safe: index - 1]?.title
-        setupLiveWindow(selectedTitle: title)
-        liveWindow!.performTransition {
-            if index == 0 {
-                self.screens.stopScreenSession(liveWindow: self.liveWindow!)
-                self.windows.stopWindowSession(liveWindow: self.liveWindow!)
-                self.videoDevs.stopVideoDevSession(liveWindow: self.liveWindow!)
-                self.liveWindow?.showIdleScreen()
-            } else if let displayID = self.screenItems[safe: index - 1]?.displayID {
+            case .screen(let i):
+                guard let displayID = self.screenItems[safe: i - 1]?.displayID else { self.handleSourceLost(); return }
                 self.liveWindow?.hideIdleScreen()
-                self.windows.stopWindowSession(liveWindow: self.liveWindow!)
-                self.videoDevs.stopVideoDevSession(liveWindow: self.liveWindow!)
                 self.screens.selectScreen(displayID: displayID, liveWindow: self.liveWindow!)
-            }
-        }
-    }
-    
-    private func selectVideoItem(at index: Int) {
-        let title = index == 0 ? nil : videoItems[safe: index - 1]
-        setupLiveWindow(selectedTitle: title)
-        liveWindow!.performTransition {
-            if index == 0 {
-                self.videoDevs.stopVideoDevSession(liveWindow: self.liveWindow!)
-                self.windows.stopWindowSession(liveWindow: self.liveWindow!)
-                self.screens.stopScreenSession(liveWindow: self.liveWindow!)
-                self.liveWindow?.showIdleScreen()
-            } else {
+            case .video(let i):
+                guard self.videoItems[safe: i - 1] != nil else { self.handleSourceLost(); return }
                 self.liveWindow?.hideIdleScreen()
-                self.windows.stopWindowSession(liveWindow: self.liveWindow!)
-                self.screens.stopScreenSession(liveWindow: self.liveWindow!)
-                self.videoDevs.selectDev(at: index - 1, liveWindow: self.liveWindow!)
+                self.videoDevs.selectVideoDev(at: i - 1, liveWindow: self.liveWindow!)
             }
         }
     }
     
-    // Menu Bar Shortcut handlers
+    private func stopAllSessions() {
+        guard let lw = liveWindow else { return }
+        windows.stopWindowSession(liveWindow: lw)
+        screens.stopScreenSession(liveWindow: lw)
+        videoDevs.stopVideoDevSession(liveWindow: lw)
+    }
+    
+    private func deselectAllContent() {
+        windowGridView?.deselectAll()
+        screenGridView?.deselectAll()
+        videoGridView?.deselectAll()
+        selectedSource = nil
+    }
+    
+    // MARK: - Menu Bar Shortcuts handlers
     
     @objc func menuBarPresenterTimerHandler() {
         startOrStopPresenterTimer()
     }
     
     @objc func menuBarWindowHandler(_ sender: NSMenuItem) {
-        selectWindowItem(at: sender.tag)
-        syncGridSelection(windowGrid: sender.tag)
+        let source: ContentSource? = sender.tag > 0 ? .window(sender.tag) : nil
+        selectedSource = source
+        syncAllGridsToSelection()
+        selectSource(source)
     }
     
     @objc func menuBarDevHandler(_ sender: NSMenuItem) {
-        selectVideoItem(at: sender.tag)
-        syncGridSelection(videoGrid: sender.tag)
+        let source: ContentSource? = sender.tag > 0 ? .video(sender.tag) : nil
+        selectedSource = source
+        syncAllGridsToSelection()
+        selectSource(source)
     }
     
     @objc func menuBarScreenHandler(_ sender: NSMenuItem) {
-        selectScreenItem(at: sender.tag)
-        syncGridSelection(screenGrid: sender.tag)
+        let source: ContentSource? = sender.tag > 0 ? .screen(sender.tag) : nil
+        selectedSource = source
+        syncAllGridsToSelection()
+        selectSource(source)
     }
     
     @objc func menuBarScreenSwitcherHandler(_ sender: NSMenuItem) {
         if liveWindow == nil { liveWindow = LiveWindow() }
-        if let win = liveWindow?.window {
-            switchers.moveLiveWindowToSelectedScreen(window: win, to: sender.tag)
-        }
+        if let win = liveWindow?.window { switchers.moveLiveWindowToSelectedDisplay(window: win, to: sender.tag) }
     }
     
     @objc func menuBarAudioOutputDeviceHandler(_ sender: NSMenuItem) {
         switchers.setAudioOutputDevice(to: AudioDeviceID(sender.tag))
     }
     
+    @objc func menuBarStopPresentingHandler() {
+        stopPresenting(self)
+    }
+    
+    // MARK: - Setup
+    
     private func setupLiveWindow(selectedTitle: String?) {
         liveWindow = liveWindow ?? LiveWindow()
         let title = selectedTitle ?? ""
         liveContentIndicator.stringValue = title.isEmpty ? "Nothing" : title
+        menuBarShortcuts.updatePresentingIndicator(with: title)
     }
     
     private func setupPresenterTimer() {
@@ -181,24 +237,43 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
     
+    private func setupSourceLostHandlers() {
+        let handler: () -> Void = { [weak self] in self?.handleSourceLost() }
+        windows.onWindowLost = handler
+        screens.onSourceLost = handler
+        videoDevs.onVideoDevLost = handler
+    }
+    
+    private func handleSourceLost() {
+        guard liveWindow != nil else { return }
+        deselectAllContent()
+        setupLiveWindow(selectedTitle: nil)
+        liveWindow?.performTransition {
+            self.stopAllSessions()
+            self.liveWindow?.showIdleScreen()
+        }
+    }
+    
     private func startOrStopPresenterTimer() {
         isTimerRunning.toggle()
         timerText.font = .systemFont(ofSize: 20.0, weight: isTimerRunning ? .heavy : .light)
         isTimerRunning ? presenterTimer.startTimer() : presenterTimer.pauseTimer()
     }
     
+    // MARK: - Menu Bar Shortcuts items
+    
     private func refreshMenuBarItems() {
-        // Tag 0 = "None", tag N = real item at data-array index N-1.
-        let windowData: [(String, Int)] = [("-- None --", 0)] + windowItems.enumerated().map { ($0.element.title, $0.offset + 1) }
+        // Tag 0 = Stop presenting; tag N = item at data-array index N-1.
+        let windowData = windowItems.enumerated().map { ($0.element.title, $0.offset + 1) }
         updateSubMenuItems(menuBarShortcuts.windowSubMenu, from: windowData, action: #selector(menuBarWindowHandler))
         
-        let videoData: [(String, Int)] = [("-- None --", 0)] + videoItems.enumerated().map { ($0.element, $0.offset + 1) }
+        let videoData = videoItems.enumerated().map { ($0.element, $0.offset + 1) }
         updateSubMenuItems(menuBarShortcuts.deviceSubMenu, from: videoData, action: #selector(menuBarDevHandler))
-
-        let screenData: [(String, Int)] = [("-- None --", 0)] + screenItems.enumerated().map { ($0.element.title, $0.offset + 1) }
+        
+        let screenData = screenItems.enumerated().map { ($0.element.title, $0.offset + 1) }
         updateSubMenuItems(menuBarShortcuts.screenSubMenu, from: screenData, action: #selector(menuBarScreenHandler))
         
-        let displayData = NSScreen.screens.enumerated().map { (switchers.getScreenNameOrResolution(screen: $0.element), $0.offset) }
+        let displayData = NSScreen.screens.enumerated().map { (switchers.getDisplayInfo(screen: $0.element), $0.offset) }
         updateSubMenuItems(menuBarShortcuts.displaySubMenu, from: displayData, action: #selector(menuBarScreenSwitcherHandler))
         
         let audioData = switchers.getAudioOutputDeviceIDs().map { (switchers.getAudioOutputDeviceName(deviceID: $0), Int($0)) }
@@ -207,6 +282,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     
     private func updateSubMenuItems(_ menu: NSMenu, from items: [(title: String, tag: Int)], action: Selector) {
         menu.removeAllItems()
+        
         for item in items {
             let menuItem = NSMenuItem(title: item.title, action: action, keyEquivalent: "")
             menuItem.target = self
@@ -215,8 +291,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
     
+    // MARK: - Content Chooser grids
+    
+    private func dataIndexToGridIndex(_ dataIndex: Int?) -> Int? {
+        guard let i = dataIndex, i > 0 else { return nil }
+        return i - 1
+    }
+    
     private func setupContentGrids() {
-        guard let tabView = contentPicker else { return }
+        guard let tabView = contentChooser else { return }
         
         for tabItem in tabView.tabViewItems {
             guard let contentView = tabItem.view else { continue }
@@ -227,15 +310,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             scrollView.drawsBackground = false
             scrollView.borderType = .noBorder
             
-            let gridView = ContentGridView(frame: NSRect(x: 0, y: 0, width: contentView.bounds.width, height: contentView.bounds.height))
+            let gridView = ContentGridView(frame: NSRect(origin: .zero, size: contentView.bounds.size))
             scrollView.documentView = gridView
             contentView.addSubview(scrollView)
             
             switch tabItem.label {
-                case "App Window": windowGridView = gridView
-                case "Screen": screenGridView = gridView
-                case "Video Device": videoGridView = gridView
-                default: break
+            case "App Window": windowGridView = gridView
+            case "Screen": screenGridView = gridView
+            case "Video Device": videoGridView  = gridView
+            default: break
             }
         }
     }
@@ -243,120 +326,108 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func refreshAllGrids() {
         refreshWindowGrid()
         refreshScreenGrid()
-        refreshVideoGrid()
+        refreshVideoDevGrid()
+    }
+    
+    private func refreshGrid(_ grid: ContentGridView,
+                             selectedIndex: Int?,
+                             fetchItems: @escaping () -> [(name: String, thumbnail: NSImage?)],
+                             onSelect: @escaping (Int) -> Void) {
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard self != nil else { return }
+            let items = fetchItems()
+            DispatchQueue.main.async {
+                grid.populateGridItems(items: items, selectedIndex: selectedIndex, onSelect: onSelect)
+            }
+        }
     }
     
     private func refreshWindowGrid() {
         guard let grid = windowGridView else { return }
-        
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+        refreshGrid(grid,
+                    selectedIndex: dataIndexToGridIndex(selectedWindowIndex),
+                    fetchItems: { [weak self] in
+            guard let self = self else { return [] }
+            return self.windowItems.map { window in
+                let thumb = CGWindowListCreateImage(.null,
+                                                    .optionIncludingWindow,
+                                                    window.windowID,
+                                                    [.bestResolution, .boundsIgnoreFraming])
+                    .map { NSImage(cgImage: $0, size: .zero) }
+                return (window.title, thumb)
+            }
+        }, onSelect: { [weak self] gridIndex in
             guard let self = self else { return }
-            var items: [(name: String, thumbnail: NSImage?)] = [("Stop Presenting", ContentSourceCardView.noSourceThumbnail(size: NSSize(width: 160, height: 90)))]
-            
-            for window in self.windowItems {
-                let thumb: NSImage? = {
-                    guard let ref = CGWindowListCreateImage(.null, .optionIncludingWindow, window.windowID, [.bestResolution, .boundsIgnoreFraming]) else { return nil }
-                    return NSImage(cgImage: ref, size: .zero)
-                }()
-                items.append((window.title, thumb))
-            }
-            
-            DispatchQueue.main.async {
-                grid.populateGridItems(items: items, selectedIndex: self.selectedWindowIndex) { [weak self] index in
-                    guard let self = self else { return }
-                    self.selectedWindowIndex = index
-                    self.selectedScreenIndex = nil
-                    self.selectedVideoIndex = nil
-                    self.screenGridView?.deselectAll()
-                    self.videoGridView?.deselectAll()
-                    self.selectWindowItem(at: index)
-                }
-            }
-        }
+            let source = ContentSource.window(gridIndex + 1)
+            self.selectedSource = source
+            self.screenGridView?.deselectAll()
+            self.videoGridView?.deselectAll()
+            self.selectSource(source)
+        })
     }
     
     private func refreshScreenGrid() {
         guard let grid = screenGridView else { return }
-        
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+        refreshGrid(grid,
+                    selectedIndex: dataIndexToGridIndex(selectedScreenIndex),
+                    fetchItems: { [weak self] in
+            guard let self = self else { return [] }
+            return self.screenItems.map { screen in
+                let thumb = CGDisplayCreateImage(screen.displayID).map { NSImage(cgImage: $0, size: .zero) }
+                return (screen.title, thumb)
+            }
+        }, onSelect: { [weak self] gridIndex in
             guard let self = self else { return }
-            var items: [(name: String, thumbnail: NSImage?)] = [("Stop Presenting", ContentSourceCardView.noSourceThumbnail(size: NSSize(width: 160, height: 90)))]
-            
-            for screen in self.screenItems {
-                let thumb: NSImage? = {
-                    guard let ref = CGDisplayCreateImage(screen.displayID) else { return nil }
-                    return NSImage(cgImage: ref, size: .zero)
-                }()
-                items.append((screen.title, thumb))
-            }
-            
-            DispatchQueue.main.async {
-                grid.populateGridItems(items: items, selectedIndex: self.selectedScreenIndex) { [weak self] index in
-                    guard let self = self else { return }
-                    self.selectedScreenIndex = index
-                    self.selectedWindowIndex = nil
-                    self.selectedVideoIndex = nil
-                    self.windowGridView?.deselectAll()
-                    self.videoGridView?.deselectAll()
-                    self.selectScreenItem(at: index)
-                }
-            }
-        }
+            let source = ContentSource.screen(gridIndex + 1)
+            self.selectedSource = source
+            self.windowGridView?.deselectAll()
+            self.videoGridView?.deselectAll()
+            self.selectSource(source)
+        })
     }
     
-    private func refreshVideoGrid() {
+    private func refreshVideoDevGrid() {
         guard let grid = videoGridView else { return }
-        var items: [(name: String, thumbnail: NSImage?)] = [("Stop Presenting", ContentSourceCardView.noSourceThumbnail(size: NSSize(width: 160, height: 90)))]
+        let items = videoItems.map {
+            name -> (name: String, thumbnail: NSImage?) in
+            (name, ContentSourceCardView.videoDevThumbnail(size: NSSize(width: 160, height: 90)))}
         
-        for name in videoItems {
-            let thumb = ContentSourceCardView.videoDevThumbnail(size: NSSize(width: 160, height: 90))
-            items.append((name, thumb))
-        }
-        
-        grid.populateGridItems(items: items, selectedIndex: selectedVideoIndex) { [weak self] index in
+        grid.populateGridItems(items: items,
+                               selectedIndex: dataIndexToGridIndex(selectedVideoIndex)) { [weak self] gridIndex in
             guard let self = self else { return }
-            self.selectedVideoIndex  = index
-            self.selectedWindowIndex = nil
-            self.selectedScreenIndex = nil
+            let source = ContentSource.video(gridIndex + 1)
+            self.selectedSource = source
             self.windowGridView?.deselectAll()
             self.screenGridView?.deselectAll()
-            self.selectVideoItem(at: index)
+            self.selectSource(source)
         }
     }
     
-    // Content selection sync
-    private func syncGridSelection(windowGrid win: Int? = nil, screenGrid scr: Int? = nil, videoGrid vid: Int? = nil) {
-        if let index = win {
-            selectedWindowIndex = index
-            selectedScreenIndex = nil
-            selectedVideoIndex = nil
-            windowGridView?.selectCard(at: index)
-            screenGridView?.deselectAll()
-            videoGridView?.deselectAll()
-        } else if let index = scr {
-            selectedScreenIndex = index
-            selectedWindowIndex = nil
-            selectedVideoIndex = nil
-            screenGridView?.selectCard(at: index)
-            windowGridView?.deselectAll()
-            videoGridView?.deselectAll()
-        } else if let index = vid {
-            selectedVideoIndex = index
-            selectedWindowIndex = nil
-            selectedScreenIndex = nil
-            videoGridView?.selectCard(at: index)
-            windowGridView?.deselectAll()
-            screenGridView?.deselectAll()
+    private func syncAllGridsToSelection() {
+        windowGridView?.deselectAll()
+        screenGridView?.deselectAll()
+        videoGridView?.deselectAll()
+        
+        guard
+            let source = selectedSource,
+            let gridIdx = dataIndexToGridIndex(source.dataIndex) else { return }
+        
+        switch source {
+        case .window: windowGridView?.selectContentCard(at: gridIdx)
+        case .screen: screenGridView?.selectContentCard(at: gridIdx)
+        case .video: videoGridView?.selectContentCard(at: gridIdx)
         }
     }
+    
+    // MARK: - AppKit lifecycle
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        AppDelegate.sharedPlaceholder = self
         if let menu = menuBarShortcuts.menuBarItem.menu { menu.delegate = self }
-        windowItems = windows.getItems()
+        windowItems = windows.getVisibleWindows()
         videoItems = videoDevs.getDeviceNames()
-        screenItems = screens.getItems()
+        screenItems = screens.getAllScreens()
         setupPresenterTimer()
+        setupSourceLostHandlers()
         refreshMenuBarItems()
         setupContentGrids()
         refreshAllGrids()
@@ -364,15 +435,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     
     func menuNeedsUpdate(_ menu: NSMenu) {
         refreshMenuBarItems()
-        menuBarShortcuts.toggleMenuItem?.title = isTimerRunning ? "Pause Timer" : (presenterTimer.totalSeconds > 0 ? "Resume Timer" : "Start Timer")
+        menuBarShortcuts.toggleMenuItem?.title = isTimerRunning ? "Pause Timer" :
+        (presenterTimer.totalSeconds > 0 ? "Resume Timer" : "Start Timer")
     }
     
     func applicationWillTerminate(_ aNotification: Notification) {}
-}
-
-// Safe array subscript helper
-private extension Array {
-    subscript(safe index: Int) -> Element? {
-        return indices.contains(index) ? self[index] : nil
-    }
+    
 }

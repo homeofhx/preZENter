@@ -2,7 +2,7 @@
 
 ![preZENter](pZtPromo.png)
 
-A presentation utility application for Mac computers. It presents an application window or video capture device live on a separate screen.
+A presentation utility application for Mac computers. It presents an application window, screen, or video capture device you select, live on a separate display.
 
 Inspired by various video conferencing software's Share Screen feature. Influenced by [Presenter Mode](https://github.com/benjones/presenterMode) by [Ben Jones](https://github.com/benjones).
 
@@ -10,27 +10,25 @@ Inspired by various video conferencing software's Share Screen feature. Influenc
 
 ## Features
 
-- **Selective Content Presenting.** Presents only a specific app's window or a video capture device, so your audience will focus on what you want them to see.
+- **Selective Content Presenting.** Presents only what you want your audience to see.
 
-- **Handy Tools.** Contains tools that can be helpful for your presentation, including Presenter Timer, Screen Switcher, and menu bar shortcuts.
+- **External Video Capture Device Support.** Supports most plug-and-play video capture devices, as well as iOS devices' screens.
 
-- **Quick Setup.** Easy to use, less to learn, so you can focus more on your presentation rather than the setup;
+- **Handy Tools.** Contains helpful tools for presentation, including Presenter Timer, Idle Screen, Display/Audio Switcher, and Menu Bar Shortcuts.
 
-- **Legacy Mac OS Support.** Compatible with some older version of Mac OS, as low as 10.12 (Sierra).
+- **Quick Setup.** Easy to use, less to learn, so you can focus more on your presentation rather than the setup.
 
 ## Technical Details
 
-**Mac OS Compatibility:** **X86_64 build:** 10.12 (Sierra) to 10.14 (Mojave); **Universal 2 build:** 10.15 (Catalina) or newer.
+**Mac OS Compatibility:** 10.13 (High Sierra) or newer.
 
-**Frameworks Used:** [Core Graphics](https://developer.apple.com/documentation/coregraphics) (app window capturing), [AVFoundation](https://developer.apple.com/documentation/avfoundation) (external video capture devices capturing), [AppKit](https://developer.apple.com/documentation/appkit) ([Cocoa](https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/CocoaFundamentals/WhatIsCocoa/WhatIsCocoa.html) for the UI)
+**Frameworks Used:** [ScreenCaptureKit](https://developer.apple.com/documentation/screencapturekit) (app window & screen capturing), [Core Graphics](https://developer.apple.com/documentation/coregraphics) (legacy app window & screen capturing), [AVFoundation](https://developer.apple.com/documentation/avfoundation) (external devices capturing), [AppKit](https://developer.apple.com/documentation/appkit) ([Cocoa](https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/CocoaFundamentals/WhatIsCocoa/WhatIsCocoa.html) for the UI)
 
-**Build Environment:** **X86_64 build:** Xcode 10. **Universal 2 build:** latest Xcode with `Deployment Target=10.15` and `Architecture=$(ARCHS_STANDARD)` (Apple Silicon, Intel).
+**Development Environment:** Latest Xcode since June 2026 (Xcode 10 since the first release).
 
-**Beta Version:** Download this repository, then build and run the project.
+**Beta Version:** Clone/download this repository, then build and run the project in Xcode. Please note that beta versions can contain unimplemented features, more issues, and unpredictable behaviors.
 
-> Please Note:
-> 1. Beta versions can contain unimplemented functionalities, more issues, and unpredictable behaviors;
-> 2. When building on Xcode 10, make sure to comment out the part indicated by the comments in the code. Otherwise Xcode can't build the project.
+**License:** [GNU General Public License v3.0](LICENSE)
 
 ## Thanks
 
