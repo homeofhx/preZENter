@@ -22,6 +22,8 @@
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>NSCameraUsageDescription</key>
 	<string>preZENter needs your permission to activate your selected video capture device.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>preZENter needs your permission to stream audio from your selected video capture device.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>© Harry Xie</string>
 	<key>NSMainNibFile</key>

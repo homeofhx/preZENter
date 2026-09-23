@@ -1,6 +1,7 @@
 import Cocoa
 import CoreGraphics
 import ScreenCaptureKit
+import ApplicationServices
 
 class Windows: NSObject {
     
@@ -30,6 +31,7 @@ class Windows: NSObject {
     
     public func selectWindow(id: CGWindowID, liveWindow: LiveWindow) {
         stopWindowSession(liveWindow: liveWindow)
+        Windows.bringWindowToFront(windowID: id)
         
         if #available(macOS 12.3, *) {
             let capturer = SCKWindowCapturer(windowID: id, liveWindow: liveWindow, delegate: self)
@@ -48,7 +50,38 @@ class Windows: NSObject {
         liveWindow.stopLiveView()
     }
     
+    // MARK: - Bringing selected window to the front
+    
+    fileprivate static func bringWindowToFront(windowID: CGWindowID) {
+        guard
+            let windowInfo = (CGWindowListCopyWindowInfo(.optionIncludingWindow, windowID) as? [[String: AnyObject]])?.first,
+            let ownerPID = windowInfo[kCGWindowOwnerPID as String] as? pid_t
+        else { return }
+        
+        NSRunningApplication(processIdentifier: ownerPID)?.activate(options: [.activateIgnoringOtherApps])
+        raiseAXWindow(windowID: windowID, ownerPID: ownerPID)
+    }
+    
+    private static func raiseAXWindow(windowID: CGWindowID, ownerPID: pid_t) {
+        let appElement = AXUIElementCreateApplication(ownerPID)
+        var value: CFTypeRef?
+        
+        guard AXUIElementCopyAttributeValue(appElement, kAXWindowsAttribute as CFString, &value) == .success,
+              let axWindows = value as? [AXUIElement] else { return }
+        
+        for axWindow in axWindows {
+            var axWindowID: CGWindowID = 0
+            guard _AXUIElementGetWindow(axWindow, &axWindowID) == .success, axWindowID == windowID else { continue }
+            AXUIElementPerformAction(axWindow, kAXRaiseAction as CFString)
+            break
+        }
+    }
+    
 }
+
+@_silgen_name("_AXUIElementGetWindow")
+@discardableResult
+private func _AXUIElementGetWindow(_ element: AXUIElement, _ identifier: inout CGWindowID) -> AXError
 
 // MARK: - Protocols
 

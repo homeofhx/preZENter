@@ -164,6 +164,10 @@ class ContentSourceCardView: NSView {
         return stringToNSImg(text: "📹", size: size)
     }
     
+    public static func iOSDeviceThumbnail(size: NSSize) -> NSImage {
+        return stringToNSImg(text: "📱", size: size)
+    }
+    
     private static func stringToNSImg(text: String, size: NSSize) -> NSImage {
         let image = NSImage(size: size)
         image.lockFocus()

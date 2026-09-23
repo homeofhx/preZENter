@@ -24,7 +24,7 @@ Inspired by various video conferencing software's Share Screen feature. Influenc
 
 **Frameworks Used:** [ScreenCaptureKit](https://developer.apple.com/documentation/screencapturekit) (app window & screen capturing), [Core Graphics](https://developer.apple.com/documentation/coregraphics) (legacy app window & screen capturing), [AVFoundation](https://developer.apple.com/documentation/avfoundation) (external devices capturing), [AppKit](https://developer.apple.com/documentation/appkit) ([Cocoa](https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/CocoaFundamentals/WhatIsCocoa/WhatIsCocoa.html) for the UI)
 
-**Development Environment:** Latest Xcode since June 2026 (Xcode 10 since the first release).
+**Development Environment:** Xcode 26 since June 2026; Xcode 10 since the first release.
 
 **Beta Version:** Clone/download this repository, then build and run the project in Xcode. Please note that beta versions can contain unimplemented features, more issues, and unpredictable behaviors.
 

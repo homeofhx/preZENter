@@ -150,6 +150,12 @@ Gw
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 </view>
                             </tabViewItem>
+                            <tabViewItem label="iOS Device" identifier="" id="UZi-OS-Dev" userLabel="iOS Device">
+                                <view key="view" id="IOS-Dev-Grd">
+                                    <rect key="frame" x="10" y="33" width="575" height="256"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                </view>
+                            </tabViewItem>
                         </tabViewItems>
                     </tabView>
                     <textField focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="MSB-Au-jzZ">

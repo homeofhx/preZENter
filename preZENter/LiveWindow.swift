@@ -78,15 +78,27 @@ class LiveWindow: NSWindowController {
         windowLayer.image = image
     }
     
-    public func setupLiveView(session: AVCaptureSession) {
-        stopLiveView()
+    public func showCapturePreview(session: AVCaptureSession) {
         hideIdleScreen()
+        windowLayer.image = nil
         
-        videoDevPreview.previewLayer.session = session
-        videoDevPreview.previewLayer.videoGravity = .resizeAspect
+        if videoDevPreview.previewLayer.session !== session {
+            videoDevPreview.previewLayer.session = session
+            videoDevPreview.previewLayer.videoGravity = .resizeAspect
+        }
+        
         videoDevPreview.isHidden = false
-        
-        self.window?.makeKeyAndOrderFront(nil)
+    }
+    
+    public func hideCapturePreview(session: AVCaptureSession) {
+        guard videoDevPreview.previewLayer.session === session else { return }
+        videoDevPreview.isHidden = true
+    }
+    
+    public func stopCapturePreview(session: AVCaptureSession) {
+        guard videoDevPreview.previewLayer.session === session else { return }
+        videoDevPreview.previewLayer.session = nil
+        videoDevPreview.isHidden = true
     }
     
     public func stopLiveView() {
@@ -100,7 +112,6 @@ class LiveWindow: NSWindowController {
         refreshIdleScreenContents()
         idleLayer.isHidden = false
         changeIdleScreenTimerVisibility()
-        window?.makeKeyAndOrderFront(nil)
     }
     
     public func hideIdleScreen() {

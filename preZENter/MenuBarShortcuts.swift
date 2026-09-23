@@ -5,6 +5,7 @@ class MenuBarShortcuts: NSObject {
     public var toggleMenuItem: NSMenuItem?
     public var windowSubMenu = NSMenu()
     public var deviceSubMenu = NSMenu()
+    public var iOSDeviceSubMenu = NSMenu()
     public var screenSubMenu = NSMenu()
     public var displaySubMenu = NSMenu()
     public var audioOutputSubMenu = NSMenu()
@@ -71,6 +72,10 @@ class MenuBarShortcuts: NSObject {
         let deviceItem = NSMenuItem(title: "Video Capture Devices", action: nil, keyEquivalent: "")
         deviceItem.submenu = deviceSubMenu
         menu.addItem(deviceItem)
+        
+        let iOSDeviceItem = NSMenuItem(title: "iOS Device", action: nil, keyEquivalent: "")
+        iOSDeviceItem.submenu = iOSDeviceSubMenu
+        menu.addItem(iOSDeviceItem)
         
         menu.addItem(NSMenuItem.separator())
         

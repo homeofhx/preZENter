@@ -11,10 +11,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @IBOutlet weak var contentChooser: NSTabView!
     
     private enum ContentSource: Equatable {
-        case window(Int), screen(Int), video(Int)
+        case window(Int), screen(Int), video(Int), iOSDevice(Int)
         
         var dataIndex: Int {
-            switch self { case .window(let index), .screen(let index), .video(let index): return index }
+            switch self {
+            case .window(let index), .screen(let index), .video(let index), .iOSDevice(let index):
+                return index
+            }
         }
         
         var title: String {
@@ -22,6 +25,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             case .window: return "window"
             case .screen: return "screen"
             case .video: return "video"
+            case .iOSDevice: return "iOS device"
             }
         }
     }
@@ -45,27 +49,38 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         set { selectedSource = newValue.map { .video($0) } }
     }
     
+    private var selectedIOSDeviceIndex: Int? {
+        get { if case .iOSDevice(let index) = selectedSource { return index } else { return nil } }
+        set { selectedSource = newValue.map { .iOSDevice($0) } }
+    }
+    
     // MARK: - Data model
-    // Index - 0: "--None--"; index 1+: actual content; ...Items[i]: index "i+1"
     private var windowItems: [(title: String, windowID: CGWindowID)] = []
     private var screenItems: [(title: String, displayID: CGDirectDisplayID)] = []
-    private var videoItems: [String] = []
+    private var videoItems: [(name: String, uniqueID: String)] = []
+    private var iOSDeviceItems: [(name: String, uniqueID: String)] = []
     
     // MARK: - Components
     private var liveWindow: LiveWindow?
     private var videoDevs = VideoCaptureDevs()
+    private var iOSDevices = iOSDevs()
+    private let captureDeviceDiscovery = CaptureDevDiscovery()
     private var windows = Windows()
     private var screens = Screens()
+    private let presenterTimer = PresenterTimer()
+    private let switchers = Switchers()
     private var menuBarShortcuts = MenuBarShortcuts()
     private var isTimerRunning = false
     
-    private let presenterTimer = PresenterTimer()
-    private let switchers = Switchers()
+    // MARK: - Auto refresh new contents
+    private var contentAutoRefreshTimer: Timer?
+    private static let autoRefreshInterval: TimeInterval = 2.0
     
     // MARK: - Grid views
     private var windowGridView: ContentGridView?
     private var screenGridView: ContentGridView?
     private var videoGridView: ContentGridView?
+    private var iOSDeviceGridView: ContentGridView?
     
     // MARK: - XIB action connections
     
@@ -74,11 +89,77 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
     
     @IBAction func refreshContents(_ sender: Any) {
-        windowItems = windows.getVisibleWindows()
-        videoItems = videoDevs.getDeviceNames()
-        screenItems = screens.getAllScreens()
+        let freshWindowItems = windows.getVisibleWindows()
+        let freshCaptureDeviceItems = captureDeviceDiscovery.getDeviceLists()
+        let freshScreenItems = screens.getAllScreens()
+        let selectedWindowID = selectedWindowIndex.flatMap { windowItems[safe: $0 - 1]?.windowID }
+        let selectedDisplayID = selectedScreenIndex.flatMap { screenItems[safe: $0 - 1]?.displayID }
+        let selectedVideoUniqueID = selectedVideoIndex.flatMap { videoItems[safe: $0 - 1]?.uniqueID }
+        let selectedIOSDeviceUniqueID = selectedIOSDeviceIndex.flatMap { iOSDeviceItems[safe: $0 - 1]?.uniqueID }
+        
+        windowItems = mergeKeepingNewItemsFirst(existing: windowItems, fresh: freshWindowItems, key: { $0.windowID })
+        screenItems = mergeKeepingNewItemsFirst(existing: screenItems, fresh: freshScreenItems, key: { $0.displayID })
+        videoItems = mergeKeepingNewItemsFirst(existing: videoItems, fresh: freshCaptureDeviceItems.video, key: { $0.uniqueID })
+        iOSDeviceItems = mergeKeepingNewItemsFirst(existing: iOSDeviceItems, fresh: freshCaptureDeviceItems.iOS, key: { $0.uniqueID })
+        
+        let selectedSourceWasLost = reindexSelection(windowID: selectedWindowID,
+                                                      displayID: selectedDisplayID,
+                                                      videoUniqueID: selectedVideoUniqueID,
+                                                      iOSDeviceUniqueID: selectedIOSDeviceUniqueID)
+        
         refreshMenuBarItems()
         refreshAllGrids()
+        if selectedSourceWasLost { handleSourceLost() }
+    }
+    
+    private func mergeKeepingNewItemsFirst<T>(existing: [T], fresh: [T], key: (T) -> AnyHashable) -> [T] {
+        let freshByKey = Dictionary(fresh.map { (key($0), $0) }, uniquingKeysWith: { first, _ in first })
+        let stillPresent = existing.compactMap { freshByKey[key($0)] }
+        let stillPresentKeys = Set(stillPresent.map(key))
+        let newlyAppeared = fresh.filter { !stillPresentKeys.contains(key($0)) }
+        
+        return newlyAppeared + stillPresent
+    }
+    
+    private func reindexSelection(windowID: CGWindowID?,
+                                  displayID: CGDirectDisplayID?,
+                                  videoUniqueID: String?,
+                                  iOSDeviceUniqueID: String?) -> Bool {
+        switch selectedSource {
+        case .window:
+            if let id = windowID, let idx = windowItems.firstIndex(where: { $0.windowID == id }) {
+                selectedWindowIndex = idx + 1
+            } else {
+                selectedSource = nil
+                return true
+            }
+        case .screen:
+            if let id = displayID, let idx = screenItems.firstIndex(where: { $0.displayID == id }) {
+                selectedScreenIndex = idx + 1
+            } else {
+                selectedSource = nil
+                return true
+            }
+        case .video:
+            if let uniqueID = videoUniqueID, let idx = videoItems.firstIndex(where: { $0.uniqueID == uniqueID }) {
+                selectedVideoIndex = idx + 1
+            } else {
+                selectedSource = nil
+                return true
+            }
+        case .iOSDevice:
+            if let uniqueID = iOSDeviceUniqueID,
+               let idx = iOSDeviceItems.firstIndex(where: { $0.uniqueID == uniqueID }) {
+                selectedIOSDeviceIndex = idx + 1
+            } else {
+                selectedSource = nil
+                return true
+            }
+        case .none:
+            break
+        }
+        
+        return false
     }
     
     @IBAction func presenterTimerButtonPressed(_ sender: Any) {
@@ -134,14 +215,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         switch source {
         case .window(let i): title = windowItems[safe: i - 1]?.title
         case .screen(let i): title = screenItems[safe: i - 1]?.title
-        case .video(let i): title = videoItems[safe: i - 1]
+        case .video(let i): title = videoItems[safe: i - 1]?.name
+        case .iOSDevice(let i): title = iOSDeviceItems[safe: i - 1]?.name
         case .none: title = nil
         }
         
         setupLiveWindow(selectedTitle: title)
         
         liveWindow?.performTransition {
-            self.stopAllSessions()
+            self.suspendSessions(for: source)
             
             guard let source = source else {
                 self.liveWindow?.showIdleScreen()
@@ -158,9 +240,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 self.liveWindow?.hideIdleScreen()
                 self.screens.selectScreen(displayID: displayID, liveWindow: self.liveWindow!)
             case .video(let i):
-                guard self.videoItems[safe: i - 1] != nil else { self.handleSourceLost(); return }
+                guard let uniqueID = self.videoItems[safe: i - 1]?.uniqueID else { self.handleSourceLost(); return }
                 self.liveWindow?.hideIdleScreen()
-                self.videoDevs.selectVideoDev(at: i - 1, liveWindow: self.liveWindow!)
+                self.videoDevs.selectVideoDev(uniqueID: uniqueID, liveWindow: self.liveWindow!)
+            case .iOSDevice(let i):
+                guard let uniqueID = self.iOSDeviceItems[safe: i - 1]?.uniqueID else { self.handleSourceLost(); return }
+                self.liveWindow?.hideIdleScreen()
+                self.iOSDevices.selectDevice(uniqueID: uniqueID, liveWindow: self.liveWindow!)
             }
         }
     }
@@ -170,12 +256,30 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         windows.stopWindowSession(liveWindow: lw)
         screens.stopScreenSession(liveWindow: lw)
         videoDevs.stopVideoDevSession(liveWindow: lw)
+        iOSDevices.stopSession(liveWindow: lw)
+    }
+    
+    private func suspendSessions(for newSource: ContentSource?) {
+        guard let lw = liveWindow else { return }
+        windows.stopWindowSession(liveWindow: lw)
+        screens.stopScreenSession(liveWindow: lw)
+        
+        switch newSource {
+        case .video:
+            iOSDevices.pausePresentation(liveWindow: lw)
+        case .iOSDevice:
+            videoDevs.pauseVideoDevPresentation(liveWindow: lw)
+        case .window, .screen, .none:
+            videoDevs.pauseVideoDevPresentation(liveWindow: lw)
+            iOSDevices.pausePresentation(liveWindow: lw)
+        }
     }
     
     private func deselectAllContent() {
         windowGridView?.deselectAll()
         screenGridView?.deselectAll()
         videoGridView?.deselectAll()
+        iOSDeviceGridView?.deselectAll()
         selectedSource = nil
     }
     
@@ -194,6 +298,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     
     @objc func menuBarDevHandler(_ sender: NSMenuItem) {
         let source: ContentSource? = sender.tag > 0 ? .video(sender.tag) : nil
+        selectedSource = source
+        syncAllGridsToSelection()
+        selectSource(source)
+    }
+    
+    @objc func menuBarIOSDeviceHandler(_ sender: NSMenuItem) {
+        let source: ContentSource? = sender.tag > 0 ? .iOSDevice(sender.tag) : nil
         selectedSource = source
         syncAllGridsToSelection()
         selectSource(source)
@@ -224,8 +335,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func setupLiveWindow(selectedTitle: String?) {
         liveWindow = liveWindow ?? LiveWindow()
         let title = selectedTitle ?? ""
-        liveContentIndicator.stringValue = title.isEmpty ? "Nothing" : title
+        liveContentIndicator.stringValue = title.isEmpty ? "Nothing" : AppDelegate.truncatedContentName(title)
         menuBarShortcuts.updatePresentingIndicator(with: title)
+    }
+    
+    private static func truncatedContentName(_ name: String) -> String {
+        guard name.count > 45 else { return name }
+        return name.prefix(45) + "..."
     }
     
     private func setupPresenterTimer() {
@@ -242,6 +358,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         windows.onWindowLost = handler
         screens.onSourceLost = handler
         videoDevs.onVideoDevLost = handler
+        iOSDevices.onDeviceLost = handler
     }
     
     private func handleSourceLost() {
@@ -267,8 +384,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let windowData = windowItems.enumerated().map { ($0.element.title, $0.offset + 1) }
         updateSubMenuItems(menuBarShortcuts.windowSubMenu, from: windowData, action: #selector(menuBarWindowHandler))
         
-        let videoData = videoItems.enumerated().map { ($0.element, $0.offset + 1) }
+        let videoData = videoItems.enumerated().map { ($0.element.name, $0.offset + 1) }
         updateSubMenuItems(menuBarShortcuts.deviceSubMenu, from: videoData, action: #selector(menuBarDevHandler))
+        
+        let iOSDeviceData = iOSDeviceItems.enumerated().map { ($0.element.name, $0.offset + 1) }
+        updateSubMenuItems(menuBarShortcuts.iOSDeviceSubMenu,
+                           from: iOSDeviceData,
+                           action: #selector(menuBarIOSDeviceHandler))
         
         let screenData = screenItems.enumerated().map { ($0.element.title, $0.offset + 1) }
         updateSubMenuItems(menuBarShortcuts.screenSubMenu, from: screenData, action: #selector(menuBarScreenHandler))
@@ -318,6 +440,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             case "App Window": windowGridView = gridView
             case "Screen": screenGridView = gridView
             case "Video Device": videoGridView  = gridView
+            case "iOS Device": iOSDeviceGridView = gridView
             default: break
             }
         }
@@ -327,6 +450,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         refreshWindowGrid()
         refreshScreenGrid()
         refreshVideoDevGrid()
+        refreshIOSDeviceGrid()
     }
     
     private func refreshGrid(_ grid: ContentGridView,
@@ -362,6 +486,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             self.selectedSource = source
             self.screenGridView?.deselectAll()
             self.videoGridView?.deselectAll()
+            self.iOSDeviceGridView?.deselectAll()
             self.selectSource(source)
         })
     }
@@ -382,6 +507,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             self.selectedSource = source
             self.windowGridView?.deselectAll()
             self.videoGridView?.deselectAll()
+            self.iOSDeviceGridView?.deselectAll()
             self.selectSource(source)
         })
     }
@@ -389,8 +515,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func refreshVideoDevGrid() {
         guard let grid = videoGridView else { return }
         let items = videoItems.map {
-            name -> (name: String, thumbnail: NSImage?) in
-            (name, ContentSourceCardView.videoDevThumbnail(size: NSSize(width: 160, height: 90)))}
+            item -> (name: String, thumbnail: NSImage?) in
+            (item.name, ContentSourceCardView.videoDevThumbnail(size: NSSize(width: 160, height: 90)))
+        }
         
         grid.populateGridItems(items: items,
                                selectedIndex: dataIndexToGridIndex(selectedVideoIndex)) { [weak self] gridIndex in
@@ -399,6 +526,26 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             self.selectedSource = source
             self.windowGridView?.deselectAll()
             self.screenGridView?.deselectAll()
+            self.iOSDeviceGridView?.deselectAll()
+            self.selectSource(source)
+        }
+    }
+    
+    private func refreshIOSDeviceGrid() {
+        guard let grid = iOSDeviceGridView else { return }
+        let items = iOSDeviceItems.map {
+            item -> (name: String, thumbnail: NSImage?) in
+            (item.name, ContentSourceCardView.iOSDeviceThumbnail(size: NSSize(width: 160, height: 90)))
+        }
+        
+        grid.populateGridItems(items: items,
+                               selectedIndex: dataIndexToGridIndex(selectedIOSDeviceIndex)) { [weak self] gridIndex in
+            guard let self = self else { return }
+            let source = ContentSource.iOSDevice(gridIndex + 1)
+            self.selectedSource = source
+            self.windowGridView?.deselectAll()
+            self.screenGridView?.deselectAll()
+            self.videoGridView?.deselectAll()
             self.selectSource(source)
         }
     }
@@ -407,6 +554,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         windowGridView?.deselectAll()
         screenGridView?.deselectAll()
         videoGridView?.deselectAll()
+        iOSDeviceGridView?.deselectAll()
         
         guard
             let source = selectedSource,
@@ -416,6 +564,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         case .window: windowGridView?.selectContentCard(at: gridIdx)
         case .screen: screenGridView?.selectContentCard(at: gridIdx)
         case .video: videoGridView?.selectContentCard(at: gridIdx)
+        case .iOSDevice: iOSDeviceGridView?.selectContentCard(at: gridIdx)
         }
     }
     
@@ -424,13 +573,26 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         if let menu = menuBarShortcuts.menuBarItem.menu { menu.delegate = self }
         windowItems = windows.getVisibleWindows()
-        videoItems = videoDevs.getDeviceNames()
+        let captureDeviceItems = captureDeviceDiscovery.getDeviceLists()
+        videoItems = captureDeviceItems.video
+        iOSDeviceItems = captureDeviceItems.iOS
         screenItems = screens.getAllScreens()
         setupPresenterTimer()
         setupSourceLostHandlers()
         refreshMenuBarItems()
         setupContentGrids()
         refreshAllGrids()
+        startContentAutoRefresh()
+    }
+    
+    private func startContentAutoRefresh() {
+        contentAutoRefreshTimer?.invalidate()
+        contentAutoRefreshTimer = Timer.scheduledTimer(withTimeInterval: AppDelegate.autoRefreshInterval, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            self.refreshContents(self)
+        }
+        
+        RunLoop.current.add(contentAutoRefreshTimer!, forMode: .common)
     }
     
     func menuNeedsUpdate(_ menu: NSMenu) {
@@ -439,6 +601,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         (presenterTimer.totalSeconds > 0 ? "Resume Timer" : "Start Timer")
     }
     
-    func applicationWillTerminate(_ aNotification: Notification) {}
+    func applicationWillTerminate(_ aNotification: Notification) {
+        contentAutoRefreshTimer?.invalidate()
+    }
     
 }
