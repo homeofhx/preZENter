@@ -3,6 +3,13 @@ import AVFoundation
 
 class LiveWindow: NSWindowController {
     
+    public var onPresentationStatusChanged: ((Bool) -> Void)?
+    public private(set) var isPresenting = false {
+        didSet {
+            if isPresenting != oldValue { onPresentationStatusChanged?(isPresenting) }
+        }
+    }
+    
     private var windowLayer: NSImageView!
     private var videoDevPreview: VideoDevPreview!
     private var idleLayer: NSImageView!
@@ -13,7 +20,7 @@ class LiveWindow: NSWindowController {
     
     convenience init() {
         let liveWindow = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1024, height: 576),
-                                  styleMask: [.titled, .closable, .resizable, .miniaturizable],
+                                  styleMask: [.titled, .resizable, .miniaturizable],
                                   backing: .buffered,
                                   defer: false)
         liveWindow.title = "preZENter - Live Window"
@@ -76,6 +83,7 @@ class LiveWindow: NSWindowController {
     public func updateWindowLayerImage(_ image: NSImage) {
         guard !idleScreenActiveStatus else { return }
         windowLayer.image = image
+        updatePresentationStatus()
     }
     
     public func showCapturePreview(session: AVCaptureSession) {
@@ -88,23 +96,27 @@ class LiveWindow: NSWindowController {
         }
         
         videoDevPreview.isHidden = false
+        updatePresentationStatus()
     }
     
     public func hideCapturePreview(session: AVCaptureSession) {
         guard videoDevPreview.previewLayer.session === session else { return }
         videoDevPreview.isHidden = true
+        updatePresentationStatus()
     }
     
     public func stopCapturePreview(session: AVCaptureSession) {
         guard videoDevPreview.previewLayer.session === session else { return }
         videoDevPreview.previewLayer.session = nil
         videoDevPreview.isHidden = true
+        updatePresentationStatus()
     }
     
     public func stopLiveView() {
         videoDevPreview.previewLayer.session = nil
         videoDevPreview.isHidden = true
         windowLayer.image = nil
+        updatePresentationStatus()
     }
     
     public func showIdleScreen() {
@@ -112,12 +124,19 @@ class LiveWindow: NSWindowController {
         refreshIdleScreenContents()
         idleLayer.isHidden = false
         changeIdleScreenTimerVisibility()
+        updatePresentationStatus()
     }
     
     public func hideIdleScreen() {
         idleScreenActiveStatus = false
         idleLayer.isHidden = true
         hideIdleScreenTimer()
+        updatePresentationStatus()
+    }
+    
+    private func updatePresentationStatus() {
+        let hasCapturePreview = !videoDevPreview.isHidden && videoDevPreview.previewLayer.session != nil
+        isPresenting = idleLayer.isHidden && (windowLayer.image != nil || hasCapturePreview)
     }
     
     public func refreshIdleScreenContents() {

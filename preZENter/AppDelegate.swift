@@ -7,6 +7,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     
     @IBOutlet weak var window: NSWindow!
     @IBOutlet weak var liveContentIndicator: NSTextField!
+    @IBOutlet weak var presentationStatusIndicator: NSButton!
     @IBOutlet weak var timerText: NSTextField!
     @IBOutlet weak var contentChooser: NSTabView!
     
@@ -61,16 +62,24 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var iOSDeviceItems: [(name: String, uniqueID: String)] = []
     
     // MARK: - Components
-    private var liveWindow: LiveWindow?
+    private var liveWindow: LiveWindow? {
+        didSet {
+            liveWindow?.onPresentationStatusChanged = { [weak self] isPresenting in
+                self?.updatePresentationStatusIndicator(isPresenting: isPresenting)
+            }
+            updatePresentationStatusIndicator(isPresenting: liveWindow?.isPresenting ?? false)
+        }
+    }
     private var videoDevs = VideoCaptureDevs()
     private var iOSDevices = iOSDevs()
-    private let captureDeviceDiscovery = CaptureDevDiscovery()
     private var windows = Windows()
     private var screens = Screens()
-    private let presenterTimer = PresenterTimer()
-    private let switchers = Switchers()
     private var menuBarShortcuts = MenuBarShortcuts()
     private var isTimerRunning = false
+    
+    private let captureDeviceDiscovery = CaptureDevDiscovery()
+    private let presenterTimer = PresenterTimer()
+    private let switchers = Switchers()
     
     // MARK: - Auto refresh new contents
     private var contentAutoRefreshTimer: Timer?
@@ -293,7 +302,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let source: ContentSource? = sender.tag > 0 ? .window(sender.tag) : nil
         selectedSource = source
         syncAllGridsToSelection()
-        selectSource(source)
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            if #available(macOS 14.0, *) {
+                NSApp.activate()
+            } else {
+                NSApp.activate(ignoringOtherApps: true)
+            }
+            self.selectSource(source)
+        }
     }
     
     @objc func menuBarDevHandler(_ sender: NSMenuItem) {
@@ -331,6 +349,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
     
     // MARK: - Setup
+    
+    private func updatePresentationStatusIndicator(isPresenting: Bool) {
+        presentationStatusIndicator.image = NSImage(named: isPresenting ? NSImage.statusAvailableName : NSImage.statusUnavailableName)
+        presentationStatusIndicator.toolTip = isPresenting ? "Presenting content" : "Not presenting content"
+        menuBarShortcuts.updatePresentationStatus(isPresenting: isPresenting)
+    }
     
     private func setupLiveWindow(selectedTitle: String?) {
         liveWindow = liveWindow ?? LiveWindow()
@@ -571,6 +595,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     // MARK: - AppKit lifecycle
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
+        presentationStatusIndicator.isEnabled = false
+        (presentationStatusIndicator.cell as? NSButtonCell)?.imageDimsWhenDisabled = false
+        updatePresentationStatusIndicator(isPresenting: liveWindow?.isPresenting ?? false)
         if let menu = menuBarShortcuts.menuBarItem.menu { menu.delegate = self }
         windowItems = windows.getVisibleWindows()
         let captureDeviceItems = captureDeviceDiscovery.getDeviceLists()

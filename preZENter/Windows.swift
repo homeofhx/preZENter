@@ -55,15 +55,24 @@ class Windows: NSObject {
     fileprivate static func bringWindowToFront(windowID: CGWindowID) {
         guard
             let windowInfo = (CGWindowListCopyWindowInfo(.optionIncludingWindow, windowID) as? [[String: AnyObject]])?.first,
-            let ownerPID = windowInfo[kCGWindowOwnerPID as String] as? pid_t
+            let ownerPID = windowInfo[kCGWindowOwnerPID as String] as? pid_t,
+            let application = NSRunningApplication(processIdentifier: ownerPID)
         else { return }
         
-        NSRunningApplication(processIdentifier: ownerPID)?.activate(options: [.activateIgnoringOtherApps])
-        raiseAXWindow(windowID: windowID, ownerPID: ownerPID)
+        let appElement = AXUIElementCreateApplication(ownerPID)
+        
+        if #available(macOS 14.0, *) {
+            NSApp.yieldActivation(to: application)
+            application.activate(from: NSRunningApplication.current, options: [])
+        } else {
+            application.activate(options: [.activateIgnoringOtherApps])
+        }
+        
+        AXUIElementSetAttributeValue(appElement, kAXFrontmostAttribute as CFString, kCFBooleanTrue)
+        raiseAXWindow(windowID: windowID, appElement: appElement)
     }
     
-    private static func raiseAXWindow(windowID: CGWindowID, ownerPID: pid_t) {
-        let appElement = AXUIElementCreateApplication(ownerPID)
+    private static func raiseAXWindow(windowID: CGWindowID, appElement: AXUIElement) {
         var value: CFTypeRef?
         
         guard AXUIElementCopyAttributeValue(appElement, kAXWindowsAttribute as CFString, &value) == .success,

@@ -13,6 +13,9 @@ class MenuBarShortcuts: NSObject {
     
     internal private(set) var menuBarItem: NSStatusItem!
     
+    private var timerText = ""
+    private var isPresenting = false
+    
     override init() {
         super.init()
         
@@ -26,11 +29,40 @@ class MenuBarShortcuts: NSObject {
             button.imagePosition = .imageLeft
         }
         
+        updateMenuBarTitle()
         setupMenu()
     }
     
     public func updateMenuBarTimer(with timeString: String) {
-        DispatchQueue.main.async { self.menuBarItem.button?.title = "  " + timeString }
+        DispatchQueue.main.async {
+            self.timerText = timeString
+            self.updateMenuBarTitle()
+        }
+    }
+    
+    public func updatePresentationStatus(isPresenting: Bool) {
+        DispatchQueue.main.async {
+            self.isPresenting = isPresenting
+            self.updateMenuBarTitle()
+            self.currentPresentedContentText?.image = self.presentationStatusIndicator()
+        }
+    }
+    
+    private func presentationStatusIndicator() -> NSImage? {
+        return NSImage(named: isPresenting ? NSImage.statusAvailableName : NSImage.statusUnavailableName)
+    }
+    
+    private func updateMenuBarTitle() {
+        guard let button = menuBarItem.button else { return }
+        let font = button.font ?? NSFont.menuBarFont(ofSize: 0)
+        let statusIcon = NSTextAttachment()
+        statusIcon.image = presentationStatusIndicator()
+        statusIcon.bounds = NSRect(x: 0, y: (font.capHeight - 16) / 2, width: 16, height: 16)
+        let title = NSMutableAttributedString(string: " ")
+        title.append(NSAttributedString(attachment: statusIcon))
+        if !timerText.isEmpty { title.append(NSAttributedString(string: " " + timerText)) }
+        title.addAttribute(.font, value: font, range: NSRange(location: 0, length: title.length))
+        button.attributedTitle = title
     }
     
     public func updatePresentingIndicator(with contentName: String) {
@@ -44,6 +76,7 @@ class MenuBarShortcuts: NSObject {
         let menu = NSMenu()
         
         let presentingIndicator = NSMenuItem(title: "Select something to present...", action: nil, keyEquivalent: "")
+        presentingIndicator.image = presentationStatusIndicator()
         presentingIndicator.isEnabled = false
         menu.addItem(presentingIndicator)
         self.currentPresentedContentText = presentingIndicator

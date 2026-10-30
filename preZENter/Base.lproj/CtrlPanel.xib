@@ -19,6 +19,7 @@
             <connections>
                 <outlet property="contentChooser" destination="1M0-dv-hBR" id="tVj-kp-Y9m"/>
                 <outlet property="liveContentIndicator" destination="GbQ-nV-Qoo" id="370-TU-lPS"/>
+                <outlet property="presentationStatusIndicator" destination="8QE-4t-Nbp" id="fTR-9v-pSI"/>
                 <outlet property="timerText" destination="MSB-Au-jzZ" id="654-Ye-kSj"/>
                 <outlet property="window" destination="QvC-M9-y7g" id="mG6-kV-jCy"/>
             </connections>
@@ -61,7 +62,7 @@ Gw
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
             <windowPositionMask key="initialPositionMask" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="560" y="100" width="675" height="350"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1728" height="1084"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1410"/>
             <value key="minSize" type="size" width="675" height="350"/>
             <value key="maxSize" type="size" width="675" height="350"/>
             <view key="contentView" wantsLayer="YES" id="EiT-Mj-1SZ">
@@ -208,6 +209,14 @@ Gw
                             <action selector="presenterTimerButtonPressed:" target="Voe-Tx-rLC" id="JCa-7I-UxQ"/>
                         </connections>
                     </button>
+                    <button toolTip="Not presenting content" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="8QE-4t-Nbp">
+                        <rect key="frame" x="620" y="10" width="35" height="23"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSStatusUnavailable" imagePosition="only" alignment="center" lineBreakMode="truncatingTail" enabled="NO" imageScaling="proportionallyDown" inset="2" id="sdY-Ej-bUE">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                    </button>
                 </subviews>
                 <constraints>
                     <constraint firstItem="H3K-8x-zT7" firstAttribute="leading" secondItem="PD8-V0-jEr" secondAttribute="leading" id="1rf-x0-Wuo"/>
@@ -249,8 +258,9 @@ Gw
                 <touchBarSpacerItem identifier="NSTouchBarItemIdentifierFlexibleSpace" id="j8b-Ae-2XO"/>
                 <touchBarItem id="YVD-bB-Z1n">
                     <viewController key="viewController" id="Jn3-KC-eKO">
-                        <textField key="view" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="CJg-X6-7EP">
+                        <textField key="view" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="CJg-X6-7EP">
                             <rect key="frame" x="0.0" y="0.0" width="157" height="19"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                             <textFieldCell key="cell" lineBreakMode="clipping" title="preZENter is running" id="SGg-ff-vWV">
                                 <font key="font" usesAppearanceFont="YES"/>
                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -269,6 +279,7 @@ Gw
         <image name="NSEnterFullScreenTemplate" width="20" height="19"/>
         <image name="NSFontPanel" width="32" height="32"/>
         <image name="NSRefreshTemplate" width="18" height="21"/>
+        <image name="NSStatusUnavailable" width="16" height="16"/>
         <image name="NSTouchBarAlarmTemplate" width="19" height="20"/>
         <image name="NSTouchBarAudioOutputVolumeHighTemplate" width="27" height="19"/>
         <image name="NSTouchBarRecordStopTemplate" width="18" height="17"/>
