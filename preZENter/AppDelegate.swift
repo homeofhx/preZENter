@@ -364,8 +364,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
     
     private static func truncatedContentName(_ name: String) -> String {
-        guard name.count > 45 else { return name }
-        return name.prefix(45) + "..."
+        guard name.count > 42 else { return name }
+        return name.prefix(42) + "..."
     }
     
     private func setupPresenterTimer() {

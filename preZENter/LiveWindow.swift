@@ -17,19 +17,30 @@ class LiveWindow: NSWindowController {
     private var fadeOverlay: NSView!
     private var idleScreenActiveStatus = false
     private var lifecycleObservers: [NSObjectProtocol] = []
+    private var titleBarTrackingArea: NSTrackingArea?
+    private weak var titleBarTrackingView: NSView?
     
     convenience init() {
         let liveWindow = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1024, height: 576),
-                                  styleMask: [.titled, .resizable, .miniaturizable],
+                                  styleMask: [.titled, .resizable, .miniaturizable, .fullSizeContentView],
                                   backing: .buffered,
                                   defer: false)
         liveWindow.title = "preZENter - Live Window"
         liveWindow.center()
         liveWindow.backgroundColor = NSColor.black
         self.init(window: liveWindow)
-        self.window?.makeKeyAndOrderFront(nil)
+        setTitleBarVisible(false)
         
         guard let contentView = liveWindow.contentView else { return }
+        
+        let trackingArea = NSTrackingArea(rect: .zero,
+                                          options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect],
+                                          owner: self,
+                                          userInfo: nil)
+        let trackingView = contentView.superview ?? contentView
+        trackingView.addTrackingArea(trackingArea)
+        titleBarTrackingArea = trackingArea
+        titleBarTrackingView = trackingView
         
         windowLayer = NSImageView(frame: contentView.bounds)
         windowLayer.autoresizingMask = [.width, .height]
@@ -57,6 +68,8 @@ class LiveWindow: NSWindowController {
         
         refreshIdleScreenContents()
         idleLayer.isHidden = false
+        self.window?.makeKeyAndOrderFront(nil)
+        updateTitleBarVisibilityForCurrentMouseLocation()
         
         lifecycleObservers.append(NotificationCenter.default.addObserver(forName: NSWindow.didResizeNotification,
                                                object: self.window,
@@ -78,6 +91,32 @@ class LiveWindow: NSWindowController {
         NotificationCenter.default.removeObserver(self)
         for observer in lifecycleObservers { NotificationCenter.default.removeObserver(observer) }
         idleScreenTimer?.invalidate()
+        if let trackingArea = titleBarTrackingArea { titleBarTrackingView?.removeTrackingArea(trackingArea) }
+    }
+    
+    // MARK: - Hide title bar unless mouse cursor is hovering over LV
+    
+    override func mouseEntered(with event: NSEvent) {
+        setTitleBarVisible(true)
+    }
+    
+    override func mouseExited(with event: NSEvent) {
+        setTitleBarVisible(false)
+    }
+    
+    private func updateTitleBarVisibilityForCurrentMouseLocation() {
+        guard let liveWindow = window else { return }
+        setTitleBarVisible(liveWindow.frame.contains(NSEvent.mouseLocation))
+    }
+    
+    private func setTitleBarVisible(_ isVisible: Bool) {
+        guard let liveWindow = window else { return }
+        liveWindow.titleVisibility = isVisible ? .visible : .hidden
+        liveWindow.titlebarAppearsTransparent = !isVisible
+        
+        [NSWindow.ButtonType.closeButton, .miniaturizeButton, .zoomButton].forEach {
+            liveWindow.standardWindowButton($0)?.isHidden = !isVisible
+        }
     }
     
     public func updateWindowLayerImage(_ image: NSImage) {
