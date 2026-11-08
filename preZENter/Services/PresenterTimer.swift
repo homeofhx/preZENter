@@ -1,13 +1,13 @@
 import Foundation
 
-class PresenterTimer: NSObject {
+final class PresenterTimer {
     
-    public var totalSeconds: Int = 0
-    public var onTick: ((String) -> Void)?
+    private(set) var totalSeconds: Int = 0
+    var onTick: ((String) -> Void)?
     
     private var timer: Timer?
     
-    public func startTimer() {
+    func startTimer() {
         timer?.invalidate()
         onTick?(getTimeString())
         
@@ -17,15 +17,15 @@ class PresenterTimer: NSObject {
             self.onTick?(self.getTimeString())
         }
         
-        RunLoop.current.add(timer!, forMode: .common)
+        if let timer = timer { RunLoop.current.add(timer, forMode: .common) }
     }
     
-    public func pauseTimer() {
+    func pauseTimer() {
         timer?.invalidate()
         timer = nil
     }
     
-    public func getTimeString() -> String {
+    private func getTimeString() -> String {
         String(format: "%02d:%02d:%02d", totalSeconds/3600, (totalSeconds%3600)/60, totalSeconds%60)
     }
     

@@ -13,17 +13,18 @@
 		CE350DFB2E21D79E00EC2F36 /* CtrlPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = CE350DF92E21D79E00EC2F36 /* CtrlPanel.xib */; };
 		CE350E042E223B2600EC2F36 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = CE350E032E223B2600EC2F36 /* Credits.rtf */; };
 		CE350E062E223B7500EC2F36 /* LiveWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE350E052E223B7500EC2F36 /* LiveWindow.swift */; };
-		CE350E082E223BB700EC2F36 /* VideoCaptureDevs.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE350E072E223BB700EC2F36 /* VideoCaptureDevs.swift */; };
-		CE350E0A2E223BCD00EC2F36 /* Windows.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE350E092E223BCD00EC2F36 /* Windows.swift */; };
+		CE350E082E223BB700EC2F36 /* CaptureDevicePipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE350E072E223BB700EC2F36 /* CaptureDevicePipeline.swift */; };
+		CE350E0A2E223BCD00EC2F36 /* CoreGraphicsCapturers.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE350E092E223BCD00EC2F36 /* CoreGraphicsCapturers.swift */; };
 		CE4EB7A92F6E0F430062E551 /* IdleScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE4EB7A82F6E0F430062E551 /* IdleScreen.swift */; };
-		CE5228F92F4EDAF000D691F9 /* Screens.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5228F82F4EDAF000D691F9 /* Screens.swift */; };
+		CE5228F92F4EDAF000D691F9 /* ScreenCaptureKitCapturers.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5228F82F4EDAF000D691F9 /* ScreenCaptureKitCapturers.swift */; };
 		CE56079D2EE50D96001BE8FE /* PresenterTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE56079C2EE50D96001BE8FE /* PresenterTimer.swift */; };
-		CE5AED5C2F00BCB3003C8399 /* Switchers.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5AED5B2F00BCB3003C8399 /* Switchers.swift */; };
+		CE5AED5C2F00BCB3003C8399 /* SystemSwitcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5AED5B2F00BCB3003C8399 /* SystemSwitcher.swift */; };
 		CE98C95E2FC68B50006E0B2C /* ContentGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE98C95D2FC68B50006E0B2C /* ContentGrid.swift */; };
-		CEA9978B2FD0F60800C02122 /* SafeArraySubscriptExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA9978A2FD0F60100C02122 /* SafeArraySubscriptExtension.swift */; };
-		CED100012FD1000100C02122 /* CaptureDevDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED100022FD1000100C02122 /* CaptureDevDiscovery.swift */; };
-		CED100032FD1000100C02122 /* CaptureDevSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED100042FD1000100C02122 /* CaptureDevSession.swift */; };
-		CED100052FD1000100C02122 /* iOSDevs.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED100062FD1000100C02122 /* iOSDevs.swift */; };
+		CEA9978B2FD0F60800C02122 /* ContentSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA9978A2FD0F60100C02122 /* ContentSource.swift */; };
+		CED100012FD1000100C02122 /* CaptureDeviceDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED100022FD1000100C02122 /* CaptureDeviceDiscovery.swift */; };
+		CED100032FD1000100C02122 /* DesktopCaptureController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED100042FD1000100C02122 /* DesktopCaptureController.swift */; };
+		CED100052FD1000100C02122 /* ContentSourceDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED100062FD1000100C02122 /* ContentSourceDiscovery.swift */; };
+		F00000012FD1000100C02122 /* PresentationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00000022FD1000100C02122 /* PresentationCoordinator.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,17 +37,18 @@
 		CE350DFD2E21D79E00EC2F36 /* preZENter.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = preZENter.entitlements; sourceTree = "<group>"; };
 		CE350E032E223B2600EC2F36 /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
 		CE350E052E223B7500EC2F36 /* LiveWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveWindow.swift; sourceTree = "<group>"; };
-		CE350E072E223BB700EC2F36 /* VideoCaptureDevs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCaptureDevs.swift; sourceTree = "<group>"; };
-		CE350E092E223BCD00EC2F36 /* Windows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Windows.swift; sourceTree = "<group>"; };
+		CE350E072E223BB700EC2F36 /* CaptureDevicePipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureDevicePipeline.swift; sourceTree = "<group>"; };
+		CE350E092E223BCD00EC2F36 /* CoreGraphicsCapturers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreGraphicsCapturers.swift; sourceTree = "<group>"; };
 		CE4EB7A82F6E0F430062E551 /* IdleScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdleScreen.swift; sourceTree = "<group>"; };
-		CE5228F82F4EDAF000D691F9 /* Screens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Screens.swift; sourceTree = "<group>"; };
+		CE5228F82F4EDAF000D691F9 /* ScreenCaptureKitCapturers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenCaptureKitCapturers.swift; sourceTree = "<group>"; };
 		CE56079C2EE50D96001BE8FE /* PresenterTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresenterTimer.swift; sourceTree = "<group>"; };
-		CE5AED5B2F00BCB3003C8399 /* Switchers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Switchers.swift; sourceTree = "<group>"; };
+		CE5AED5B2F00BCB3003C8399 /* SystemSwitcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemSwitcher.swift; sourceTree = "<group>"; };
 		CE98C95D2FC68B50006E0B2C /* ContentGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentGrid.swift; sourceTree = "<group>"; };
-		CEA9978A2FD0F60100C02122 /* SafeArraySubscriptExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafeArraySubscriptExtension.swift; sourceTree = "<group>"; };
-		CED100022FD1000100C02122 /* CaptureDevDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureDevDiscovery.swift; sourceTree = "<group>"; };
-		CED100042FD1000100C02122 /* CaptureDevSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureDevSession.swift; sourceTree = "<group>"; };
-		CED100062FD1000100C02122 /* iOSDevs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSDevs.swift; sourceTree = "<group>"; };
+		CEA9978A2FD0F60100C02122 /* ContentSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentSource.swift; sourceTree = "<group>"; };
+		CED100022FD1000100C02122 /* CaptureDeviceDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureDeviceDiscovery.swift; sourceTree = "<group>"; };
+		CED100042FD1000100C02122 /* DesktopCaptureController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesktopCaptureController.swift; sourceTree = "<group>"; };
+		CED100062FD1000100C02122 /* ContentSourceDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentSourceDiscovery.swift; sourceTree = "<group>"; };
+		F00000022FD1000100C02122 /* PresentationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationCoordinator.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,27 +81,76 @@
 		CE350DF42E21D79C00EC2F36 /* preZENter */ = {
 			isa = PBXGroup;
 			children = (
-				CEA9978A2FD0F60100C02122 /* SafeArraySubscriptExtension.swift */,
-				CE350DF52E21D79C00EC2F36 /* AppDelegate.swift */,
+				F10000012FD1000100C02122 /* Application */,
+				F10000022FD1000100C02122 /* ContentSources */,
+				F10000032FD1000100C02122 /* Capture */,
+				F10000042FD1000100C02122 /* Presentation */,
+				F10000052FD1000100C02122 /* UI */,
+				F10000062FD1000100C02122 /* Services */,
 				CE350DF72E21D79E00EC2F36 /* Assets.xcassets */,
 				CE350DF92E21D79E00EC2F36 /* CtrlPanel.xib */,
 				CE350DFC2E21D79E00EC2F36 /* Info.plist */,
 				CE350DFD2E21D79E00EC2F36 /* preZENter.entitlements */,
 				CE350E032E223B2600EC2F36 /* Credits.rtf */,
-				CE350E052E223B7500EC2F36 /* LiveWindow.swift */,
-				CED100022FD1000100C02122 /* CaptureDevDiscovery.swift */,
-				CED100042FD1000100C02122 /* CaptureDevSession.swift */,
-				CE350E072E223BB700EC2F36 /* VideoCaptureDevs.swift */,
-				CED100062FD1000100C02122 /* iOSDevs.swift */,
-				CE350E092E223BCD00EC2F36 /* Windows.swift */,
-				CE56079C2EE50D96001BE8FE /* PresenterTimer.swift */,
-				CE19994D2EEB876000311FFB /* MenuBarShortcuts.swift */,
-				CE5AED5B2F00BCB3003C8399 /* Switchers.swift */,
-				CE5228F82F4EDAF000D691F9 /* Screens.swift */,
-				CE4EB7A82F6E0F430062E551 /* IdleScreen.swift */,
-				CE98C95D2FC68B50006E0B2C /* ContentGrid.swift */,
 			);
 			path = preZENter;
+			sourceTree = "<group>";
+		};
+		F10000012FD1000100C02122 /* Application */ = {
+			isa = PBXGroup;
+			children = (
+				CE350DF52E21D79C00EC2F36 /* AppDelegate.swift */,
+			);
+			path = Application;
+			sourceTree = "<group>";
+		};
+		F10000022FD1000100C02122 /* ContentSources */ = {
+			isa = PBXGroup;
+			children = (
+				CEA9978A2FD0F60100C02122 /* ContentSource.swift */,
+				CED100062FD1000100C02122 /* ContentSourceDiscovery.swift */,
+				CED100022FD1000100C02122 /* CaptureDeviceDiscovery.swift */,
+			);
+			path = ContentSources;
+			sourceTree = "<group>";
+		};
+		F10000032FD1000100C02122 /* Capture */ = {
+			isa = PBXGroup;
+			children = (
+				CED100042FD1000100C02122 /* DesktopCaptureController.swift */,
+				CE350E092E223BCD00EC2F36 /* CoreGraphicsCapturers.swift */,
+				CE5228F82F4EDAF000D691F9 /* ScreenCaptureKitCapturers.swift */,
+				CE350E072E223BB700EC2F36 /* CaptureDevicePipeline.swift */,
+			);
+			path = Capture;
+			sourceTree = "<group>";
+		};
+		F10000042FD1000100C02122 /* Presentation */ = {
+			isa = PBXGroup;
+			children = (
+				F00000022FD1000100C02122 /* PresentationCoordinator.swift */,
+			);
+			path = Presentation;
+			sourceTree = "<group>";
+		};
+		F10000052FD1000100C02122 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				CE350E052E223B7500EC2F36 /* LiveWindow.swift */,
+				CE98C95D2FC68B50006E0B2C /* ContentGrid.swift */,
+				CE19994D2EEB876000311FFB /* MenuBarShortcuts.swift */,
+				CE4EB7A82F6E0F430062E551 /* IdleScreen.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		F10000062FD1000100C02122 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				CE56079C2EE50D96001BE8FE /* PresenterTimer.swift */,
+				CE5AED5B2F00BCB3003C8399 /* SystemSwitcher.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -178,20 +229,21 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CE5AED5C2F00BCB3003C8399 /* Switchers.swift in Sources */,
+				CE5AED5C2F00BCB3003C8399 /* SystemSwitcher.swift in Sources */,
 				CE98C95E2FC68B50006E0B2C /* ContentGrid.swift in Sources */,
 				CE350DF62E21D79C00EC2F36 /* AppDelegate.swift in Sources */,
 				CE56079D2EE50D96001BE8FE /* PresenterTimer.swift in Sources */,
 				CE4EB7A92F6E0F430062E551 /* IdleScreen.swift in Sources */,
-				CEA9978B2FD0F60800C02122 /* SafeArraySubscriptExtension.swift in Sources */,
-				CE5228F92F4EDAF000D691F9 /* Screens.swift in Sources */,
+				CEA9978B2FD0F60800C02122 /* ContentSource.swift in Sources */,
+				CE5228F92F4EDAF000D691F9 /* ScreenCaptureKitCapturers.swift in Sources */,
 				CE350E062E223B7500EC2F36 /* LiveWindow.swift in Sources */,
 				CE19994E2EEB876000311FFB /* MenuBarShortcuts.swift in Sources */,
-				CE350E082E223BB700EC2F36 /* VideoCaptureDevs.swift in Sources */,
-				CED100012FD1000100C02122 /* CaptureDevDiscovery.swift in Sources */,
-				CED100032FD1000100C02122 /* CaptureDevSession.swift in Sources */,
-				CED100052FD1000100C02122 /* iOSDevs.swift in Sources */,
-				CE350E0A2E223BCD00EC2F36 /* Windows.swift in Sources */,
+				CE350E082E223BB700EC2F36 /* CaptureDevicePipeline.swift in Sources */,
+				CED100012FD1000100C02122 /* CaptureDeviceDiscovery.swift in Sources */,
+				CED100032FD1000100C02122 /* DesktopCaptureController.swift in Sources */,
+				CED100052FD1000100C02122 /* ContentSourceDiscovery.swift in Sources */,
+				CE350E0A2E223BCD00EC2F36 /* CoreGraphicsCapturers.swift in Sources */,
+				F00000012FD1000100C02122 /* PresentationCoordinator.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

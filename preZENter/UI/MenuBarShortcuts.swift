@@ -1,24 +1,22 @@
 import Cocoa
 
-class MenuBarShortcuts: NSObject {
+final class MenuBarShortcuts {
     
-    public var toggleMenuItem: NSMenuItem?
-    public var windowSubMenu = NSMenu()
-    public var deviceSubMenu = NSMenu()
-    public var iOSDeviceSubMenu = NSMenu()
-    public var screenSubMenu = NSMenu()
-    public var displaySubMenu = NSMenu()
-    public var audioOutputSubMenu = NSMenu()
-    public var currentPresentedContentText: NSMenuItem?
+    var toggleMenuItem: NSMenuItem?
+    let windowSubMenu = NSMenu()
+    let deviceSubMenu = NSMenu()
+    let iOSDeviceSubMenu = NSMenu()
+    let screenSubMenu = NSMenu()
+    let displaySubMenu = NSMenu()
+    let audioOutputSubMenu = NSMenu()
     
-    internal private(set) var menuBarItem: NSStatusItem!
+    let menuBarItem: NSStatusItem
+    private var currentPresentedContentText: NSMenuItem?
     
     private var timerText = ""
     private var isPresenting = false
     
-    override init() {
-        super.init()
-        
+    init() {
         menuBarItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         
         if let button = menuBarItem.button {
@@ -33,19 +31,15 @@ class MenuBarShortcuts: NSObject {
         setupMenu()
     }
     
-    public func updateMenuBarTimer(with timeString: String) {
-        DispatchQueue.main.async {
-            self.timerText = timeString
-            self.updateMenuBarTitle()
-        }
+    func updateMenuBarTimer(with timeString: String) {
+        timerText = timeString
+        updateMenuBarTitle()
     }
     
-    public func updatePresentationStatus(isPresenting: Bool) {
-        DispatchQueue.main.async {
-            self.isPresenting = isPresenting
-            self.updateMenuBarTitle()
-            self.currentPresentedContentText?.image = self.presentationStatusIndicator()
-        }
+    func updatePresentationStatus(isPresenting: Bool) {
+        self.isPresenting = isPresenting
+        updateMenuBarTitle()
+        currentPresentedContentText?.image = presentationStatusIndicator()
     }
     
     private func presentationStatusIndicator() -> NSImage? {
@@ -65,11 +59,9 @@ class MenuBarShortcuts: NSObject {
         button.attributedTitle = title
     }
     
-    public func updatePresentingIndicator(with contentName: String) {
-        DispatchQueue.main.async {
-            let contentText = contentName.isEmpty ? "Select something to present..." : "Presenting: \(contentName)"
-            self.currentPresentedContentText?.title = contentText
-        }
+    func updatePresentingIndicator(with contentName: String) {
+        let contentText = contentName.isEmpty ? "Select something to present..." : "Presenting: \(contentName)"
+        currentPresentedContentText?.title = contentText
     }
     
     private func setupMenu() {

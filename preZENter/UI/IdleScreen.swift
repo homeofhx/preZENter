@@ -1,8 +1,8 @@
 import Cocoa
 
-class IdleScreen: NSObject {
+enum IdleScreen {
     
-    public static func renderIdleScreenContents(for size: NSSize) -> NSImage {
+    static func renderIdleScreenContents(for size: NSSize) -> NSImage {
         let message = IdleScreenSettings.shared.message
         let fontSize = IdleScreenSettings.shared.messageFontSize
         let showTime = IdleScreenSettings.shared.showTime
@@ -22,15 +22,13 @@ class IdleScreen: NSObject {
                                                            .foregroundColor: NSColor.white,
                                                            .paragraphStyle: centered])
         let messageHeight = ceil(messageAttrs.boundingRect(with: NSSize(width: maxWidth, height: size.height),
-                                                           options: [.usesLineFragmentOrigin,
-                                                                     .usesFontLeading]).height) + 5
+                                                           options: [.usesLineFragmentOrigin, .usesFontLeading]).height) + 5
         
         if showTime {
             let timerFontSize = max(fontSize * 0.65, 24)
             let timeAttributes = NSAttributedString(string: DateFormatter.hhmmss.string(from: Date()),
                                                     attributes: [.font: NSFont
-                                                        .monospacedDigitSystemFont(ofSize: timerFontSize,
-                                                                                   weight: .regular),
+                                                        .monospacedDigitSystemFont(ofSize: timerFontSize, weight: .regular),
                                                                  .foregroundColor: NSColor.white.withAlphaComponent(0.75),
                                                                  .paragraphStyle: centered])
             let timeHeight = ceil(timeAttributes.boundingRect(with: NSSize(width: maxWidth, height: size.height),
@@ -90,7 +88,7 @@ class IdleScreenSettings {
     
     // MARK: - Settings dialog
     
-    public func showIdleScreenSettings() {
+    func showIdleScreenSettings() {
         let (accessory, textView, sizeField) = buildAccessoryView()
         
         let alert = NSAlert()

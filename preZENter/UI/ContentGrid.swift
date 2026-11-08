@@ -1,6 +1,6 @@
 import Cocoa
 
-class ContentGridView: NSView {
+final class ContentGridView: NSView {
     
     override var isFlipped: Bool { return true }   // Flip so NSView coordinate system reads up-down
     
@@ -9,9 +9,7 @@ class ContentGridView: NSView {
     private static let columns: Int = 3
     private static let padding: CGFloat = 8
     
-    public func populateGridItems(items: [(name: String, thumbnail: NSImage?)],
-                                  selectedIndex: Int?,
-                                  onSelect: @escaping (Int) -> Void) {
+    func populateGridItems(items: [(name: String, thumbnail: NSImage?)], selectedIndex: Int?, onSelect: @escaping (Int) -> Void) {
         cards.forEach { $0.removeFromSuperview() }
         cards = []
         
@@ -48,22 +46,23 @@ class ContentGridView: NSView {
         frame.size.height = max(needed, superview?.frame.height ?? needed)
     }
     
-    public func selectContentCard(at index: Int) {
+    func selectContentCard(at index: Int) {
         deselectAll()
-        cards[safe: index]?.isSelected = true
+        guard cards.indices.contains(index) else { return }
+        cards[index].isSelected = true
     }
     
-    public func deselectAll() {
+    func deselectAll() {
         cards.forEach { $0.isSelected = false }
     }
     
 }
 
 // MARK: - Individual content card
-class ContentSourceCardView: NSView {
+final class ContentSourceCardView: NSView {
     
-    public var isSelected = false { didSet { updateStyle() } }
-    public var onSelect: (() -> Void)?
+    var isSelected = false { didSet { updateStyle() } }
+    var onSelect: (() -> Void)?
     
     override var isFlipped: Bool { return true }   // Flip so NSView coordinate system reads up-down
     
@@ -88,8 +87,7 @@ class ContentSourceCardView: NSView {
         preview.wantsLayer = true
         preview.layer?.cornerRadius = 4
         preview.layer?.masksToBounds = true
-        preview.image = thumbnail ?? ContentSourceCardView
-            .noSourceThumbnail(size: NSSize(width: frame.width - pad * 2, height: previewHeight))
+        preview.image = thumbnail ?? ContentSourceCardView.noSourceThumbnail(size: NSSize(width: frame.width - pad * 2, height: previewHeight))
         addSubview(preview)
         
         // Content name label at the bottom
@@ -115,10 +113,12 @@ class ContentSourceCardView: NSView {
         
         if let area = trackingArea { removeTrackingArea(area) }
         
-        trackingArea = NSTrackingArea(rect: bounds,
-                                      options: [.mouseEnteredAndExited, .activeInKeyWindow],
-                                      owner: self, userInfo: nil)
-        addTrackingArea(trackingArea!)
+        let newTrackingArea = NSTrackingArea(rect: bounds,
+                                             options: [.mouseEnteredAndExited, .activeInKeyWindow],
+                                             owner: self,
+                                             userInfo: nil)
+        trackingArea = newTrackingArea
+        addTrackingArea(newTrackingArea)
     }
     
     override func mouseEntered(with event: NSEvent) {
@@ -156,15 +156,15 @@ class ContentSourceCardView: NSView {
         }
     }
     
-    public static func noSourceThumbnail(size: NSSize) -> NSImage {
+    static func noSourceThumbnail(size: NSSize) -> NSImage {
         return stringToNSImg(text: "OFF", size: size)
     }
     
-    public static func videoDevThumbnail(size: NSSize) -> NSImage {
+    static func videoDevThumbnail(size: NSSize) -> NSImage {
         return stringToNSImg(text: "📹", size: size)
     }
     
-    public static func iOSDeviceThumbnail(size: NSSize) -> NSImage {
+    static func iOSDeviceThumbnail(size: NSSize) -> NSImage {
         return stringToNSImg(text: "📱", size: size)
     }
     

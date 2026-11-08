@@ -1,11 +1,12 @@
 import Cocoa
 import CoreAudio
 
-class Switchers: NSObject {
+final class SystemSwitcher {
+    private var displayMoveID: UInt64 = 0
     
     // MARK: - Display Switcher
     
-    public func getDisplayInfo(screen: NSScreen) -> String {
+    func displayName(for screen: NSScreen) -> String {
         guard let screenID = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")]
                 as? CGDirectDisplayID else { return "External Display" }
         if #available(macOS 10.15, *) { return screen.localizedName }
@@ -13,15 +14,21 @@ class Switchers: NSObject {
         return "Screen: (\(Int(screen.frame.width * screen.backingScaleFactor))x\(Int(screen.frame.height * screen.backingScaleFactor)))"
     }
     
-    public func moveLiveWindowToSelectedDisplay(window: NSWindow, to index: Int) {
+    func moveLiveWindow(_ window: NSWindow, toScreenAt index: Int) {
         let screens = NSScreen.screens
-        guard index < screens.count else { return }
+        guard screens.indices.contains(index) else { return }
+        displayMoveID &+= 1
+        let currentMoveID = displayMoveID
         let targetScreen = screens[index]
         
         if window.styleMask.contains(.fullScreen) {
             window.toggleFullScreen(nil)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.25) { [weak window] in
-                if let win = window { self.moveLiveWindowThenToggleFullScreen(window: win, screen: targetScreen) } }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.25) { [weak self, weak window] in
+                guard let self = self,
+                      self.displayMoveID == currentMoveID,
+                      let window = window else { return }
+                self.moveLiveWindowThenToggleFullScreen(window: window, screen: targetScreen)
+            }
         } else {
             moveLiveWindowThenToggleFullScreen(window: window, screen: targetScreen)
         }
@@ -34,7 +41,7 @@ class Switchers: NSObject {
     
     // MARK: - Audio Switcher
     
-    public func getAudioOutputDeviceName(deviceID: AudioDeviceID) -> String {
+    func audioOutputDeviceName(deviceID: AudioDeviceID) -> String {
         var name: Unmanaged<CFString>? = nil
         var propertyAddress = AudioObjectPropertyAddress(mSelector: kAudioDevicePropertyDeviceNameCFString,
                                                          mScope: kAudioObjectPropertyScopeGlobal,
@@ -47,7 +54,7 @@ class Switchers: NSObject {
         return "Unknown Audio Device"
     }
     
-    public func getAudioOutputDeviceIDs() -> [AudioDeviceID] {
+    func audioOutputDeviceIDs() -> [AudioDeviceID] {
         var address = AudioObjectPropertyAddress(mSelector: kAudioHardwarePropertyDevices,
                                                  mScope: kAudioObjectPropertyScopeGlobal,
                                                  mElement: kAudioObjectPropertyElementMain)
@@ -68,7 +75,7 @@ class Switchers: NSObject {
         }
     }
     
-    public func setAudioOutputDevice(to deviceID: AudioDeviceID) {
+    func setAudioOutputDevice(_ deviceID: AudioDeviceID) {
         var address = AudioObjectPropertyAddress(mSelector: kAudioHardwarePropertyDefaultOutputDevice,
                                                  mScope: kAudioObjectPropertyScopeGlobal,
                                                  mElement: kAudioObjectPropertyElementMaster)

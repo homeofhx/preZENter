@@ -2,9 +2,9 @@
 
 ![preZENter](pZtPromo.png)
 
-A presentation utility application for Mac computers. It presents an application window, screen, or video capture device you select, live on a separate display.
+A presentation utility application for Mac computers. It presents a single app window, an entire screen, a video capture device, or an iOS device's screen live on a separate display.
 
-Inspired by various video conferencing software's Share Screen feature. Influenced by [Presenter Mode](https://github.com/benjones/presenterMode) by [Ben Jones](https://github.com/benjones).
+Various video conferencing apps let you share one window instead of your whole desktop. preZENter brings that idea to in-person presenting. Keep your notes, messages, and other windows on your own screen while the external display shows only the content you chose.
 
 **Quick Links**: [Get the latest release](https://github.com/homeofhx/preZENter/releases/latest) | [Wiki](https://github.com/homeofhx/preZENter/wiki) | [Quick start guide](https://github.com/homeofhx/preZENter/wiki/How-to-Use-%E2%80%90-The-Basics) | [Troubleshooting](https://github.com/homeofhx/preZENter/wiki/Known-Issues-&-Limitations)
 
@@ -26,7 +26,7 @@ Inspired by various video conferencing software's Share Screen feature. Influenc
 
 **Development Environment:** Xcode 26 since June 2026; Xcode 10 since the first release.
 
-**Beta Version:** Clone/download this repository, then build and run the project in Xcode. Please note that beta versions can contain unimplemented features, more issues, and unpredictable behaviors.
+**Beta Version:** Clone/download this repository, then build and run the project in Xcode. Please note that beta versions may contain unimplemented features or unpredictable behaviors.
 
 **License:** [GNU General Public License v3.0](LICENSE)
 
