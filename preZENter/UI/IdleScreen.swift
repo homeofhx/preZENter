@@ -86,106 +86,18 @@ class IdleScreenSettings {
     
     private init() {}
     
-    // MARK: - Settings dialog
-    
-    func showIdleScreenSettings() {
-        let (accessory, textView, sizeField) = buildAccessoryView()
-        
-        let alert = NSAlert()
-        alert.messageText = "Idle Screen Settings"
-        alert.accessoryView = accessory
-        alert.addButton(withTitle: "Save")
-        alert.addButton(withTitle: "Cancel")
-        alert.addButton(withTitle: "Reset to Default")
-        
-        let timerButton = alert.addButton(withTitle: showTime ? "Hide Time" : "Show Time")
-        alert.layout()
-        alert.window.initialFirstResponder = textView
-        
-        let timerState = Box(showTime)
-        let handler = ButtonActionHandler {
-            timerState.value.toggle()
-            timerButton.title = timerState.value ? "Hide Time" : "Show Time" }
-        timerButton.target = handler
-        timerButton.action = #selector(ButtonActionHandler.invoke(_:))
-        objc_setAssociatedObject(alert, &ButtonActionHandler.key, handler, .OBJC_ASSOCIATION_RETAIN)   // Retain handler for the duration of the modal (alert holds no strong ref to it).
-        
-        switch alert.runModal() {
-        case .alertFirstButtonReturn: applySettings(from: textView, sizeField: sizeField, isTimerOn: timerState.value)   // Save
-        case .alertThirdButtonReturn: resetToDefaults()   // Reset to Default
-        default: break   // Cancel
-        }
-    }
-    
-    private func buildAccessoryView() -> (view: NSView, textView: NSTextView, sizeField: NSTextField) {
-        let accessory = NSView(frame: NSRect(x: 0, y: 0, width: 300, height: 125))
-        
-        let scrollView = NSScrollView(frame: NSRect(x: 0, y: 48, width: 300, height: 78))
-        scrollView.borderType = .bezelBorder
-        
-        let textView = NSTextView(frame: NSRect(x: 0, y: 0, width: 300, height: 78))
-        textView.isEditable = true
-        textView.isRichText = false
-        textView.isAutomaticQuoteSubstitutionEnabled = false
-        textView.font = .systemFont(ofSize: NSFont.systemFontSize)
-        textView.string = message
-        scrollView.documentView = textView
-        accessory.addSubview(scrollView)
-        
-        let sizeLabel = NSTextField(labelWithString: "Font size (pt):")
-        sizeLabel.frame = NSRect(x: 0, y: 16, width: 90, height: 18)
-        accessory.addSubview(sizeLabel)
-        
-        let sizeField = NSTextField(frame: NSRect(x: 95, y: 12, width: 80, height: 24))
-        sizeField.stringValue = String(format: "%.0f", messageFontSize)
-        sizeField.placeholderString = "85"
-        accessory.addSubview(sizeField)
-        
-        return (accessory, textView, sizeField)
-    }
-    
-    private func applySettings(from textView: NSTextView, sizeField: NSTextField, isTimerOn: Bool) {
-        let newMessage = textView.string.trimmingCharacters(in: .newlines)
-        let newSize = CGFloat(sizeField.doubleValue)
-        message = newMessage.isEmpty ? "" : newMessage
-        messageFontSize = newSize > 0 ? newSize : 85
-        showTime = isTimerOn
+    func update(message: String, fontSize: CGFloat, showTime: Bool) {
+        self.message = message.trimmingCharacters(in: .newlines)
+        messageFontSize = fontSize > 0 ? fontSize : 85
+        self.showTime = showTime
         NotificationCenter.default.post(name: .idleScreenSettingsDidChange, object: nil)
     }
     
-    private func resetToDefaults() {
+    func resetToDefaults() {
         message = "Program about to begin.\nPlease stand by."
         messageFontSize = 85
         showTime = false
         NotificationCenter.default.post(name: .idleScreenSettingsDidChange, object: nil)
-    }
-    
-}
-
-// MARK: - Helpers
-
-private final class Box<T> {
-    
-    var value: T
-    
-    init(_ value: T) {
-        self.value = value
-    }
-    
-}
-
-private final class ButtonActionHandler: NSObject {
-    
-    static var key = 0   // used as an objc_setAssociatedObject key
-    
-    private let action: () -> Void
-    
-    init(_ action: @escaping () -> Void) {
-        self.action = action
-    }
-    
-    @objc func invoke(_ sender: Any) {
-        action()
     }
     
 }

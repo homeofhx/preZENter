@@ -6,15 +6,19 @@ final class CoreGraphicsWindowCapturer: DesktopCapturer {
     weak var delegate: DesktopCapturerDelegate?
 
     private let windowID: CGWindowID
+    private let frameRate: Int
+    private let showsCursor: Bool
     private var captureTimer: Timer?
 
-    init(windowID: CGWindowID) {
+    init(windowID: CGWindowID, frameRate: Int, showsCursor: Bool) {
         self.windowID = windowID
+        self.frameRate = frameRate
+        self.showsCursor = showsCursor
     }
 
     func start() {
         stop()
-        captureTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 35.0, repeats: true) { [weak self] _ in
+        captureTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / Double(frameRate), repeats: true) { [weak self] _ in
             self?.captureFrame()
         }
         if let timer = captureTimer { RunLoop.current.add(timer, forMode: .common) }
@@ -33,7 +37,7 @@ final class CoreGraphicsWindowCapturer: DesktopCapturer {
         }
 
         let image = NSImage(cgImage: imageReference, size: .zero)
-        guard let bounds = windowBounds() else {
+        guard showsCursor, let bounds = windowBounds() else {
             delegate?.capturer(self, didCapture: image)
             return
         }
@@ -56,18 +60,22 @@ final class CoreGraphicsScreenCapturer: DesktopCapturer {
     weak var delegate: DesktopCapturerDelegate?
 
     private let displayID: CGDirectDisplayID
+    private let frameRate: Int
+    private let showsCursor: Bool
     private var captureTimer: Timer?
     private var consecutiveFailures = 0
     private static let maximumFailures = 5
 
-    init(displayID: CGDirectDisplayID) {
+    init(displayID: CGDirectDisplayID, frameRate: Int, showsCursor: Bool) {
         self.displayID = displayID
+        self.frameRate = frameRate
+        self.showsCursor = showsCursor
     }
 
     func start() {
         stop()
         consecutiveFailures = 0
-        captureTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 35.0, repeats: true) { [weak self] _ in
+        captureTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / Double(frameRate), repeats: true) { [weak self] _ in
             self?.captureFrame()
         }
         if let timer = captureTimer { RunLoop.current.add(timer, forMode: .common) }
@@ -91,7 +99,8 @@ final class CoreGraphicsScreenCapturer: DesktopCapturer {
 
         consecutiveFailures = 0
         let image = NSImage(cgImage: imageReference, size: .zero)
-        delegate?.capturer(self, didCapture: image.drawingCursor(for: CGDisplayBounds(displayID)))
+        let capturedImage = showsCursor ? image.drawingCursor(for: CGDisplayBounds(displayID)) : image
+        delegate?.capturer(self, didCapture: capturedImage)
     }
 
 }

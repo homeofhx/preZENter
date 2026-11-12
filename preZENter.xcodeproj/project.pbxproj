@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AA0000020000000000000001 /* ApplicationSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000010000000000000001 /* ApplicationSettings.swift */; };
+		AA0000040000000000000001 /* SettingsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000030000000000000001 /* SettingsWindowController.swift */; };
+		AA0000060000000000000001 /* AppEnvironmentController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000050000000000000001 /* AppEnvironmentController.swift */; };
+		AA0000080000000000000001 /* PermissionCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000070000000000000001 /* PermissionCoordinator.swift */; };
 		CE19994E2EEB876000311FFB /* MenuBarShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE19994D2EEB876000311FFB /* MenuBarShortcuts.swift */; };
 		CE350DF62E21D79C00EC2F36 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE350DF52E21D79C00EC2F36 /* AppDelegate.swift */; };
 		CE350DF82E21D79E00EC2F36 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CE350DF72E21D79E00EC2F36 /* Assets.xcassets */; };
@@ -28,6 +32,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		AA0000010000000000000001 /* ApplicationSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationSettings.swift; sourceTree = "<group>"; };
+		AA0000030000000000000001 /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
+		AA0000050000000000000001 /* AppEnvironmentController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironmentController.swift; sourceTree = "<group>"; };
+		AA0000070000000000000001 /* PermissionCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionCoordinator.swift; sourceTree = "<group>"; };
 		CE19994D2EEB876000311FFB /* MenuBarShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarShortcuts.swift; sourceTree = "<group>"; };
 		CE350DF22E21D79C00EC2F36 /* preZENter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = preZENter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE350DF52E21D79C00EC2F36 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -100,6 +108,7 @@
 			isa = PBXGroup;
 			children = (
 				CE350DF52E21D79C00EC2F36 /* AppDelegate.swift */,
+				AA0000010000000000000001 /* ApplicationSettings.swift */,
 			);
 			path = Application;
 			sourceTree = "<group>";
@@ -140,6 +149,7 @@
 				CE98C95D2FC68B50006E0B2C /* ContentGrid.swift */,
 				CE19994D2EEB876000311FFB /* MenuBarShortcuts.swift */,
 				CE4EB7A82F6E0F430062E551 /* IdleScreen.swift */,
+				AA0000030000000000000001 /* SettingsWindowController.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -149,6 +159,8 @@
 			children = (
 				CE56079C2EE50D96001BE8FE /* PresenterTimer.swift */,
 				CE5AED5B2F00BCB3003C8399 /* SystemSwitcher.swift */,
+				AA0000050000000000000001 /* AppEnvironmentController.swift */,
+				AA0000070000000000000001 /* PermissionCoordinator.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -181,7 +193,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastSwiftUpdateCheck = 1010;
-				LastUpgradeCheck = 2650;
+				LastUpgradeCheck = 2660;
 				TargetAttributes = {
 					CE350DF12E21D79C00EC2F36 = {
 						CreatedOnToolsVersion = 10.1;
@@ -229,6 +241,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA0000020000000000000001 /* ApplicationSettings.swift in Sources */,
+				AA0000040000000000000001 /* SettingsWindowController.swift in Sources */,
+				AA0000060000000000000001 /* AppEnvironmentController.swift in Sources */,
+				AA0000080000000000000001 /* PermissionCoordinator.swift in Sources */,
 				CE5AED5C2F00BCB3003C8399 /* SystemSwitcher.swift in Sources */,
 				CE98C95E2FC68B50006E0B2C /* ContentGrid.swift in Sources */,
 				CE350DF62E21D79C00EC2F36 /* AppDelegate.swift in Sources */,

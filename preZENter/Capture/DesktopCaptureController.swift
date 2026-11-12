@@ -18,23 +18,31 @@ final class DesktopCaptureController: DesktopCapturerDelegate {
     private var onFrame: ((NSImage) -> Void)?
     private var onSourceLost: (() -> Void)?
 
-    func start(source: ContentSource, onFrame: @escaping (NSImage) -> Void, onSourceLost: @escaping () -> Void) {
+    func start(source: ContentSource,
+               activatesWindow: Bool = true,
+               onFrame: @escaping (NSImage) -> Void,
+               onSourceLost: @escaping () -> Void) {
         stop()
 
+        let settings = ApplicationSettings.shared
+        let frameRate = settings.coreGraphicsFrameRate
+        let showsCursor = !settings.hidesCapturedMouseCursor
         let capturer: DesktopCapturer
         switch source {
         case .applicationWindow(let windowID):
-            DesktopCaptureController.bringWindowToFront(windowID: windowID)
-            if #available(macOS 12.3, *) {
-                capturer = ScreenCaptureKitWindowCapturer(windowID: windowID)
+            if activatesWindow && settings.bringsSelectedApplicationWindowToFront {
+                DesktopCaptureController.bringWindowToFront(windowID: windowID)
+            }
+            if #available(macOS 12.3, *), !settings.forcesCoreGraphicsCapture {
+                capturer = ScreenCaptureKitWindowCapturer(windowID: windowID, fallbackFrameRate: frameRate, showsCursor: showsCursor)
             } else {
-                capturer = CoreGraphicsWindowCapturer(windowID: windowID)
+                capturer = CoreGraphicsWindowCapturer(windowID: windowID, frameRate: frameRate, showsCursor: showsCursor)
             }
         case .screen(let displayID):
-            if #available(macOS 12.3, *) {
-                capturer = ScreenCaptureKitScreenCapturer(displayID: displayID)
+            if #available(macOS 12.3, *), !settings.forcesCoreGraphicsCapture {
+                capturer = ScreenCaptureKitScreenCapturer(displayID: displayID, fallbackFrameRate: frameRate, showsCursor: showsCursor)
             } else {
-                capturer = CoreGraphicsScreenCapturer(displayID: displayID)
+                capturer = CoreGraphicsScreenCapturer(displayID: displayID, frameRate: frameRate, showsCursor: showsCursor)
             }
         case .videoDevice, .iOSDevice:
             preconditionFailure("DesktopCaptureController only captures windows and screens")

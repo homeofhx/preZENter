@@ -5,6 +5,15 @@ enum ContentSourceKind: Equatable {
     case screen
     case videoDevice
     case iOSDevice
+
+    var emptyStateMessage: String {
+        switch self {
+        case .applicationWindow: return "No application windows found"
+        case .screen: return "No screens found"
+        case .videoDevice: return "No video capture devices found"
+        case .iOSDevice: return "No iOS devices found"
+        }
+    }
 }
 
 enum ContentSource: Equatable {

@@ -9,21 +9,25 @@ final class ScreenCaptureKitWindowCapturer: NSObject,
     weak var delegate: DesktopCapturerDelegate?
 
     private let windowID: CGWindowID
+    private let fallbackFrameRate: Int
+    private let showsCursor: Bool
     private let imageContext = CIContext()
     private var stream: SCStream?
     private var fallbackCapturer: CoreGraphicsWindowCapturer?
     private var isStopped = true
     private var fallbackStarted = false
 
-    init(windowID: CGWindowID) {
+    init(windowID: CGWindowID, fallbackFrameRate: Int, showsCursor: Bool) {
         self.windowID = windowID
+        self.fallbackFrameRate = fallbackFrameRate
+        self.showsCursor = showsCursor
     }
 
     func start() {
         isStopped = false
         fallbackStarted = false
-        SCShareableContent.getExcludingDesktopWindows(false,
-                                                      onScreenWindowsOnly: true) { [weak self] content, error in
+        SCShareableContent.getExcludingDesktopWindows(false, onScreenWindowsOnly: true) {
+            [weak self] content, error in
             DispatchQueue.main.async {
                 guard let self = self, !self.isStopped else { return }
                 guard error == nil,
@@ -84,7 +88,7 @@ final class ScreenCaptureKitWindowCapturer: NSObject,
         configuration.width = max(Int(window.frame.width * scale), 2)
         configuration.height = max(Int(window.frame.height * scale), 2)
         configuration.minimumFrameInterval = CMTime(value: 1, timescale: 60)
-        configuration.showsCursor = true
+        configuration.showsCursor = showsCursor
         configuration.pixelFormat = kCVPixelFormatType_32BGRA
 
         let newStream = SCStream(filter: filter, configuration: configuration, delegate: self)
@@ -106,7 +110,7 @@ final class ScreenCaptureKitWindowCapturer: NSObject,
         stream?.stopCapture { _ in }
         stream = nil
 
-        let capturer = CoreGraphicsWindowCapturer(windowID: windowID)
+        let capturer = CoreGraphicsWindowCapturer(windowID: windowID, frameRate: fallbackFrameRate, showsCursor: showsCursor)
         fallbackCapturer = capturer
         capturer.delegate = self
         capturer.start()
@@ -121,14 +125,18 @@ final class ScreenCaptureKitScreenCapturer: NSObject,
     weak var delegate: DesktopCapturerDelegate?
 
     private let displayID: CGDirectDisplayID
+    private let fallbackFrameRate: Int
+    private let showsCursor: Bool
     private let imageContext = CIContext()
     private var stream: SCStream?
     private var fallbackCapturer: CoreGraphicsScreenCapturer?
     private var isStopped = true
     private var fallbackStarted = false
 
-    init(displayID: CGDirectDisplayID) {
+    init(displayID: CGDirectDisplayID, fallbackFrameRate: Int, showsCursor: Bool) {
         self.displayID = displayID
+        self.fallbackFrameRate = fallbackFrameRate
+        self.showsCursor = showsCursor
     }
 
     func start() {
@@ -197,7 +205,7 @@ final class ScreenCaptureKitScreenCapturer: NSObject,
         configuration.width = max(Int(CGFloat(display.width) * scale), 2)
         configuration.height = max(Int(CGFloat(display.height) * scale), 2)
         configuration.minimumFrameInterval = CMTime(value: 1, timescale: 60)
-        configuration.showsCursor = true
+        configuration.showsCursor = showsCursor
         configuration.pixelFormat = kCVPixelFormatType_32BGRA
 
         let newStream = SCStream(filter: filter, configuration: configuration, delegate: self)
@@ -219,7 +227,7 @@ final class ScreenCaptureKitScreenCapturer: NSObject,
         stream?.stopCapture { _ in }
         stream = nil
 
-        let capturer = CoreGraphicsScreenCapturer(displayID: displayID)
+        let capturer = CoreGraphicsScreenCapturer(displayID: displayID, frameRate: fallbackFrameRate, showsCursor: showsCursor)
         fallbackCapturer = capturer
         capturer.delegate = self
         capturer.start()

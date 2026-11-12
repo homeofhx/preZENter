@@ -7,8 +7,7 @@ final class SystemSwitcher {
     // MARK: - Display Switcher
     
     func displayName(for screen: NSScreen) -> String {
-        guard let screenID = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")]
-                as? CGDirectDisplayID else { return "External Display" }
+        guard let screenID = screen.displayID else { return "External Display" }
         if #available(macOS 10.15, *) { return screen.localizedName }
         if CGDisplayIsBuiltin(screenID) != 0 { return "Mac's Built-in Display" }
         return "Screen: (\(Int(screen.frame.width * screen.backingScaleFactor))x\(Int(screen.frame.height * screen.backingScaleFactor)))"
@@ -17,9 +16,12 @@ final class SystemSwitcher {
     func moveLiveWindow(_ window: NSWindow, toScreenAt index: Int) {
         let screens = NSScreen.screens
         guard screens.indices.contains(index) else { return }
+        moveLiveWindow(window, to: screens[index])
+    }
+    
+    func moveLiveWindow(_ window: NSWindow, to screen: NSScreen) {
         displayMoveID &+= 1
         let currentMoveID = displayMoveID
-        let targetScreen = screens[index]
         
         if window.styleMask.contains(.fullScreen) {
             window.toggleFullScreen(nil)
@@ -27,10 +29,10 @@ final class SystemSwitcher {
                 guard let self = self,
                       self.displayMoveID == currentMoveID,
                       let window = window else { return }
-                self.moveLiveWindowThenToggleFullScreen(window: window, screen: targetScreen)
+                self.moveLiveWindowThenToggleFullScreen(window: window, screen: screen)
             }
         } else {
-            moveLiveWindowThenToggleFullScreen(window: window, screen: targetScreen)
+            moveLiveWindowThenToggleFullScreen(window: window, screen: screen)
         }
     }
     

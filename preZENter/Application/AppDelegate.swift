@@ -3,7 +3,7 @@ import CoreAudio
 import CoreGraphics
 
 @NSApplicationMain
-final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWindowDelegate {
+final class AppDelegate: NSObject {
 
     @IBOutlet private weak var window: NSWindow!
     @IBOutlet private weak var liveContentIndicator: NSTextField!
@@ -27,6 +27,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWind
     private let systemSwitcher = SystemSwitcher()
     private let presenterTimer = PresenterTimer()
     private let menuBarShortcuts = MenuBarShortcuts()
+    private let appEnvironmentController = AppEnvironmentController()
+    private let permissionCoordinator = PermissionCoordinator()
+    private lazy var settingsWindowController = SettingsWindowController()
     private var isTimerRunning = false
 
     private var contentAutoRefreshTimer: Timer?
@@ -38,54 +41,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWind
     private var videoGridView: ContentGridView?
     private var iOSDeviceGridView: ContentGridView?
 
+}
+
+private extension AppDelegate {
+
     // MARK: - Control Panel actions
 
-    @IBAction private func getLatestRelease(_ sender: AnyObject) {
+    @IBAction func getLatestRelease(_ sender: AnyObject) {
         guard let url = URL(string: "https://github.com/homeofhx/preZENter/releases/latest") else { return }
         NSWorkspace.shared.open(url)
     }
 
-    @IBAction func refreshContents(_ sender: Any) {
-        refreshContentCatalog(forceUIRefresh: true)
-    }
-
-    private func refreshContentCatalog(forceUIRefresh: Bool) {
-        let sourceBeforeRefresh = selectedSource
-        let catalogChanged = catalog.merge(sourceDiscovery.discover())
-        if forceUIRefresh || catalogChanged {
-            refreshMenuBarItems()
-            refreshAllGrids()
-        }
-
-        if let source = sourceBeforeRefresh, !catalog.contains(source) { handleSourceLost(source) }
-    }
-
-    @IBAction private func presenterTimerButtonPressed(_ sender: Any) {
+    @IBAction func presenterTimerButtonPressed(_ sender: Any) {
         startOrStopPresenterTimer()
     }
 
-    @IBAction private func showScreenList(_ sender: NSButton) {
+    @IBAction func showScreenList(_ sender: NSButton) {
         let menu = NSMenu(title: "Select a Display")
         let items = NSScreen.screens.enumerated().map { (systemSwitcher.displayName(for: $0.element), $0.offset) }
-        updateSubMenuItems(menu, from: items, action: #selector(menuBarScreenSwitcherHandler(_:)))
+        updateSubMenuItems(menu, from: items, emptyMessage: "No displays found", action: #selector(menuBarScreenSwitcherHandler(_:)))
         menu.popUp(positioning: nil, at: NSPoint(x: 0, y: sender.frame.height), in: sender)
     }
 
-    @IBAction private func showAudioOutputDeviceList(_ sender: NSButton) {
+    @IBAction func showAudioOutputDeviceList(_ sender: NSButton) {
         let menu = NSMenu(title: "Select an Audio Output Device")
-        let deviceIDs = systemSwitcher.audioOutputDeviceIDs()
-        if deviceIDs.isEmpty {
-            menu.addItem(withTitle: "No Audio Output Devices Found", action: nil, keyEquivalent: "")
-        } else {
-            let items = deviceIDs.map { (systemSwitcher.audioOutputDeviceName(deviceID: $0), Int($0)) }
-            updateSubMenuItems(menu, from: items, action: #selector(menuBarAudioOutputDeviceHandler(_:)))
-        }
+        let items = systemSwitcher.audioOutputDeviceIDs().map { (systemSwitcher.audioOutputDeviceName(deviceID: $0), Int($0)) }
+        updateSubMenuItems(menu, from: items, emptyMessage: "No audio output devices found", action: #selector(menuBarAudioOutputDeviceHandler(_:)))
 
         menu.popUp(positioning: nil, at: NSPoint(x: 0, y: sender.frame.height), in: sender)
     }
 
-    @IBAction private func showIdleScreenSettings(_ sender: Any) {
-        IdleScreenSettings.shared.showIdleScreenSettings()
+    @IBAction func showSettings(_ sender: Any) {
+        presentSettings()
     }
 
     @IBAction func stopPresenting(_ sender: Any) {
@@ -99,9 +86,41 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWind
         }
     }
 
+}
+
+private extension AppDelegate {
+
+    // MARK: - Content discovery
+
+    func reloadContentSources(forceUIRefresh: Bool = false) {
+        let sourceBeforeRefresh = selectedSource
+        let catalogChanged = catalog.merge(sourceDiscovery.discover())
+        if catalogChanged || forceUIRefresh {
+            refreshMenuBarItems()
+            refreshAllGrids()
+        }
+
+        if let source = sourceBeforeRefresh, !catalog.contains(source) { handleSourceLost(source) }
+    }
+
+}
+
+private extension AppDelegate {
+
     // MARK: - Source selection
 
-    private func selectSource(_ source: ContentSource) {
+    func selectSource(_ source: ContentSource) {
+        permissionCoordinator.ensurePermissions(for: source) { [weak self] granted in
+            guard let self = self else { return }
+            guard granted else {
+                self.syncAllGridsToSelection()
+                return
+            }
+            self.selectPermittedSource(source)
+        }
+    }
+
+    func selectPermittedSource(_ source: ContentSource) {
         guard catalog.contains(source), let title = catalog.title(for: source) else {
             handleSourceLost(source)
             return
@@ -116,7 +135,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWind
         }
     }
 
-    private func handleSourceLost(_ source: ContentSource) {
+    func handleSourceLost(_ source: ContentSource) {
         guard selectedSource == source else { return }
         selectedSource = nil
         syncAllGridsToSelection()
@@ -126,6 +145,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWind
             self.presentationCoordinator?.stopAndShowIdle()
         }
     }
+
+}
+
+extension AppDelegate {
 
     // MARK: - Menu bar actions
 
@@ -176,9 +199,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWind
         return catalog.source(kind: kind, at: item.tag - 1)
     }
 
+}
+
+private extension AppDelegate {
+
     // MARK: - Presentation UI
 
-    private func setupLiveWindow(selectedTitle: String?) {
+    func setupLiveWindow(selectedTitle: String?) {
         if liveWindow == nil {
             let newLiveWindow = LiveWindow()
             liveWindow = newLiveWindow
@@ -194,46 +221,99 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWind
         menuBarShortcuts.updatePresentingIndicator(with: title)
     }
 
-    private func updatePresentationStatus(isPresenting: Bool) {
+    func presentSettings() {
+        if #available(macOS 14.0, *) {
+            NSApp.activate()
+        } else {
+            NSApp.activate(ignoringOtherApps: true)
+        }
+        settingsWindowController.show()
+    }
+
+    func promptToMoveLiveWindow(to displayID: CGDirectDisplayID) {
+        guard let targetScreen = NSScreen.screens.first(where: { $0.displayID == displayID }) else { return }
+
+        if #available(macOS 14.0, *) {
+            NSApp.activate()
+        } else {
+            NSApp.activate(ignoringOtherApps: true)
+        }
+        window.makeKeyAndOrderFront(nil)
+
+        let alert = NSAlert()
+        alert.messageText = "Move Live Window to \(systemSwitcher.displayName(for: targetScreen))?"
+        alert.addButton(withTitle: "Move")
+        alert.addButton(withTitle: "Not Now")
+        alert.beginSheetModal(for: window) { [weak self] response in
+            guard response == .alertFirstButtonReturn,
+                  let self = self,
+                  let screen = NSScreen.screens.first(where: { $0.displayID == displayID }) else { return }
+            self.setupLiveWindow(selectedTitle: self.selectedSource.flatMap { self.catalog.title(for: $0) })
+            if let liveWindow = self.liveWindow?.window { self.systemSwitcher.moveLiveWindow(liveWindow, to: screen) }
+        }
+    }
+
+    func updatePresentationStatus(isPresenting: Bool) {
         presentationStatusIndicator.image = NSImage(named: isPresenting ? NSImage.statusAvailableName : NSImage.statusUnavailableName)
         presentationStatusIndicator.toolTip = isPresenting ? "Presenting content" : "Not presenting content"
         menuBarShortcuts.updatePresentationStatus(isPresenting: isPresenting)
     }
 
-    private static func truncatedContentName(_ name: String) -> String {
+    static func truncatedContentName(_ name: String) -> String {
         guard name.count > 42 else { return name }
         return String(name.prefix(42)) + "..."
     }
 
+}
+
+private extension AppDelegate {
+
     // MARK: - Content menus
 
-    private func refreshMenuBarItems() {
+    func refreshMenuBarItems() {
         updateSubMenuItems(menuBarShortcuts.windowSubMenu,
                            from: catalog.windows.enumerated().map { ($0.element.title, $0.offset + 1) },
+                           emptyMessage: ContentSourceKind.applicationWindow.emptyStateMessage,
                            action: #selector(menuBarWindowHandler(_:)))
         updateSubMenuItems(menuBarShortcuts.screenSubMenu,
                            from: catalog.screens.enumerated().map { ($0.element.title, $0.offset + 1) },
+                           emptyMessage: ContentSourceKind.screen.emptyStateMessage,
                            action: #selector(menuBarScreenHandler(_:)))
         updateSubMenuItems(menuBarShortcuts.deviceSubMenu,
                            from: catalog.videoDevices.enumerated().map { ($0.element.name, $0.offset + 1) },
+                           emptyMessage: ContentSourceKind.videoDevice.emptyStateMessage,
                            action: #selector(menuBarDevHandler(_:)))
         updateSubMenuItems(menuBarShortcuts.iOSDeviceSubMenu,
                            from: catalog.iOSDevices.enumerated().map { ($0.element.name, $0.offset + 1) },
+                           emptyMessage: ContentSourceKind.iOSDevice.emptyStateMessage,
                            action: #selector(menuBarIOSDeviceHandler(_:)))
 
         let displays = NSScreen.screens.enumerated().map { (systemSwitcher.displayName(for: $0.element), $0.offset) }
         updateSubMenuItems(menuBarShortcuts.displaySubMenu,
                            from: displays,
+                           emptyMessage: "No displays found",
                            action: #selector(menuBarScreenSwitcherHandler(_:)))
 
         let audioDevices = systemSwitcher.audioOutputDeviceIDs().map { (systemSwitcher.audioOutputDeviceName(deviceID: $0), Int($0)) }
         updateSubMenuItems(menuBarShortcuts.audioOutputSubMenu,
                            from: audioDevices,
+                           emptyMessage: "No audio output devices found",
                            action: #selector(menuBarAudioOutputDeviceHandler(_:)))
     }
 
-    private func updateSubMenuItems(_ menu: NSMenu, from items: [(title: String, tag: Int)], action: Selector) {
+    func updateSubMenuItems(_ menu: NSMenu,
+                            from items: [(title: String, tag: Int)],
+                            emptyMessage: String,
+                            action: Selector) {
         menu.removeAllItems()
+
+        guard !items.isEmpty else {
+            let emptyItem = NSMenuItem(title: emptyMessage, action: nil, keyEquivalent: "")
+            emptyItem.isEnabled = false
+            menu.addItem(emptyItem)
+            return
+        }
+
         for item in items {
             let menuItem = NSMenuItem(title: item.title, action: action, keyEquivalent: "")
             menuItem.target = self
@@ -242,9 +322,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWind
         }
     }
 
+}
+
+private extension AppDelegate {
+
     // MARK: - Content grids
 
-    private func setupContentGrids() {
+    func setupContentGrids() {
         for tabItem in contentChooser.tabViewItems {
             guard let contentView = tabItem.view else { continue }
             let scrollView = NSScrollView(frame: contentView.bounds)
@@ -267,7 +351,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWind
         }
     }
 
-    private func refreshAllGrids() {
+    func refreshAllGrids() {
         gridRefreshID &+= 1
         let refreshID = gridRefreshID
         let snapshot = catalog
@@ -277,7 +361,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWind
         refreshIOSDeviceGrid(snapshot: snapshot)
     }
 
-    private func refreshWindowGrid(snapshot: ContentSourceCatalog, refreshID: UInt64) {
+    func refreshWindowGrid(snapshot: ContentSourceCatalog, refreshID: UInt64) {
         guard let grid = windowGridView else { return }
         DispatchQueue.global(qos: .userInitiated).async { [weak self, weak grid] in
             let items = snapshot.windows.map { window -> (name: String, thumbnail: NSImage?) in
@@ -292,8 +376,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWind
                 guard let self = self,
                       let grid = grid,
                       self.gridRefreshID == refreshID else { return }
-                grid.populateGridItems(items: items, selectedIndex: self.selectedIndex(in: snapshot,
-                                                                                       kind: .applicationWindow)) {
+                grid.populateGridItems(items: items,
+                                       selectedIndex: self.selectedIndex(in: snapshot, kind: .applicationWindow),
+                                       emptyMessage: ContentSourceKind.applicationWindow.emptyStateMessage) {
                     [weak self] index in
                     guard let source = snapshot.source(kind: .applicationWindow, at: index) else { return }
                     self?.selectSource(source)
@@ -302,7 +387,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWind
         }
     }
 
-    private func refreshScreenGrid(snapshot: ContentSourceCatalog, refreshID: UInt64) {
+    func refreshScreenGrid(snapshot: ContentSourceCatalog, refreshID: UInt64) {
         guard let grid = screenGridView else { return }
         DispatchQueue.global(qos: .userInitiated).async { [weak self, weak grid] in
             let items = snapshot.screens.map { screen -> (name: String, thumbnail: NSImage?) in
@@ -313,7 +398,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWind
                 guard let self = self,
                       let grid = grid,
                       self.gridRefreshID == refreshID else { return }
-                grid.populateGridItems(items: items, selectedIndex: self.selectedIndex(in: snapshot, kind: .screen)) {
+                grid.populateGridItems(items: items,
+                                       selectedIndex: self.selectedIndex(in: snapshot, kind: .screen),
+                                       emptyMessage: ContentSourceKind.screen.emptyStateMessage) {
                     [weak self] index in
                     guard let source = snapshot.source(kind: .screen, at: index) else { return }
                     self?.selectSource(source)
@@ -322,35 +409,39 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWind
         }
     }
 
-    private func refreshVideoDeviceGrid(snapshot: ContentSourceCatalog) {
+    func refreshVideoDeviceGrid(snapshot: ContentSourceCatalog) {
         guard let grid = videoGridView else { return }
         let thumbnail = ContentSourceCardView.videoDevThumbnail(size: NSSize(width: 160, height: 90))
         let items = snapshot.videoDevices.map { ($0.name, Optional(thumbnail)) }
-        grid.populateGridItems(items: items, selectedIndex: selectedIndex(in: snapshot, kind: .videoDevice)) {
+        grid.populateGridItems(items: items,
+                               selectedIndex: selectedIndex(in: snapshot, kind: .videoDevice),
+                               emptyMessage: ContentSourceKind.videoDevice.emptyStateMessage) {
             [weak self] index in
             guard let source = snapshot.source(kind: .videoDevice, at: index) else { return }
             self?.selectSource(source)
         }
     }
 
-    private func refreshIOSDeviceGrid(snapshot: ContentSourceCatalog) {
+    func refreshIOSDeviceGrid(snapshot: ContentSourceCatalog) {
         guard let grid = iOSDeviceGridView else { return }
         let thumbnail = ContentSourceCardView.iOSDeviceThumbnail(size: NSSize(width: 160, height: 90))
         let items = snapshot.iOSDevices.map { ($0.name, Optional(thumbnail)) }
-        grid.populateGridItems(items: items, selectedIndex: selectedIndex(in: snapshot, kind: .iOSDevice)) {
+        grid.populateGridItems(items: items,
+                               selectedIndex: selectedIndex(in: snapshot, kind: .iOSDevice),
+                               emptyMessage: ContentSourceKind.iOSDevice.emptyStateMessage) {
             [weak self] index in
             guard let source = snapshot.source(kind: .iOSDevice, at: index) else { return }
             self?.selectSource(source)
         }
     }
 
-    private func selectedIndex(in snapshot: ContentSourceCatalog, kind: ContentSourceKind) -> Int? {
+    func selectedIndex(in snapshot: ContentSourceCatalog, kind: ContentSourceKind) -> Int? {
         guard let selectedSource = selectedSource,
               selectedSource.kind == kind else { return nil }
         return snapshot.index(of: selectedSource)
     }
 
-    private func syncAllGridsToSelection() {
+    func syncAllGridsToSelection() {
         windowGridView?.deselectAll()
         screenGridView?.deselectAll()
         videoGridView?.deselectAll()
@@ -366,9 +457,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWind
         }
     }
 
+}
+
+private extension AppDelegate {
+
     // MARK: - Timer
 
-    private func setupPresenterTimer() {
+    func setupPresenterTimer() {
         presenterTimer.onTick = { [weak self] timeString in
             DispatchQueue.main.async {
                 self?.timerText.stringValue = timeString
@@ -377,13 +472,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWind
         }
     }
 
-    private func startOrStopPresenterTimer() {
+    func startOrStopPresenterTimer() {
         isTimerRunning.toggle()
         timerText.font = .systemFont(ofSize: 20.0, weight: isTimerRunning ? .heavy : .light)
         isTimerRunning ? presenterTimer.startTimer() : presenterTimer.pauseTimer()
     }
 
-    // MARK: - App lifecycle
+}
+
+// MARK: - App lifecycle
+
+extension AppDelegate: NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         window.delegate = self
@@ -392,12 +491,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWind
         updatePresentationStatus(isPresenting: false)
         menuBarShortcuts.menuBarItem.menu?.delegate = self
 
-        catalog.merge(sourceDiscovery.discover())
         setupPresenterTimer()
-        refreshMenuBarItems()
         setupContentGrids()
-        refreshAllGrids()
+        reloadContentSources(forceUIRefresh: true)
         startContentAutoRefresh()
+        appEnvironmentController.onExternalDisplayConnected = { [weak self] displayID in
+            self?.promptToMoveLiveWindow(to: displayID)
+        }
+        appEnvironmentController.start()
+        permissionCoordinator.presentingWindow = window
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.permissionCoordinator.ensureScreenCapturePermission { [weak self] granted in
+                guard let self = self, granted else { return }
+                self.reloadContentSources(forceUIRefresh: true)
+            }
+        }
     }
 
     private func startContentAutoRefresh() {
@@ -405,21 +514,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWind
         contentAutoRefreshTimer = Timer.scheduledTimer(
             withTimeInterval: AppDelegate.autoRefreshInterval,
             repeats: true) { [weak self] _ in
-                self?.refreshContentCatalog(forceUIRefresh: false)
+                self?.reloadContentSources()
         }
         if let timer = contentAutoRefreshTimer { RunLoop.current.add(timer, forMode: .common) }
     }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        contentAutoRefreshTimer?.invalidate()
+        presenterTimer.pauseTimer()
+        appEnvironmentController.stop()
+        presentationCoordinator?.shutdown()
+    }
+
+}
+
+extension AppDelegate: NSMenuDelegate {
 
     func menuNeedsUpdate(_ menu: NSMenu) {
         refreshMenuBarItems()
         menuBarShortcuts.toggleMenuItem?.title = isTimerRunning ? "Pause Timer" : (presenterTimer.totalSeconds > 0 ? "Resume Timer" : "Start Timer")
     }
 
-    func applicationWillTerminate(_ notification: Notification) {
-        contentAutoRefreshTimer?.invalidate()
-        presenterTimer.pauseTimer()
-        presentationCoordinator?.shutdown()
-    }
+}
+
+extension AppDelegate: NSWindowDelegate {
 
     func windowWillClose(_ notification: Notification) {
         guard let closingWindow = notification.object as? NSWindow,

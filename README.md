@@ -20,7 +20,7 @@ Various video conferencing apps let you share one window instead of your whole d
 
 ## Technical Details
 
-**Mac OS Compatibility:** 10.13 (High Sierra) or newer.
+**macOS Compatibility:** 10.13 (High Sierra) or newer.
 
 **Frameworks Used:** [ScreenCaptureKit](https://developer.apple.com/documentation/screencapturekit) (app window & screen capturing), [Core Graphics](https://developer.apple.com/documentation/coregraphics) (legacy app window & screen capturing), [AVFoundation](https://developer.apple.com/documentation/avfoundation) (external devices capturing), [AppKit](https://developer.apple.com/documentation/appkit) ([Cocoa](https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/CocoaFundamentals/WhatIsCocoa/WhatIsCocoa.html) for the UI)
 

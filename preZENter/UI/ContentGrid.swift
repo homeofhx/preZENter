@@ -6,12 +6,30 @@ final class ContentGridView: NSView {
     
     private(set) var cards: [ContentSourceCardView] = []
     
+    private let emptyStateLabel: NSTextField = {
+        let label = NSTextField(labelWithString: "")
+        label.alignment = .center
+        label.font = .systemFont(ofSize: 25)
+        label.textColor = .secondaryLabelColor
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
     private static let columns: Int = 3
     private static let padding: CGFloat = 8
     
-    func populateGridItems(items: [(name: String, thumbnail: NSImage?)], selectedIndex: Int?, onSelect: @escaping (Int) -> Void) {
+    func populateGridItems(items: [(name: String, thumbnail: NSImage?)],
+                           selectedIndex: Int?,
+                           emptyMessage: String,
+                           onSelect: @escaping (Int) -> Void) {
         cards.forEach { $0.removeFromSuperview() }
         cards = []
+        
+        updateEmptyState(message: emptyMessage, isVisible: items.isEmpty)
+        if items.isEmpty {
+            frame.size.height = superview?.bounds.height ?? bounds.height
+            return
+        }
         
         let gridColumns = ContentGridView.columns
         let gridPaddings = ContentGridView.padding
@@ -44,6 +62,19 @@ final class ContentGridView: NSView {
         let rows = CGFloat((items.count + gridColumns - 1) / gridColumns)
         let needed = gridPaddings + rows * (itemHeight + gridPaddings)
         frame.size.height = max(needed, superview?.frame.height ?? needed)
+    }
+    
+    private func updateEmptyState(message: String, isVisible: Bool) {
+        if emptyStateLabel.superview == nil {
+            addSubview(emptyStateLabel)
+            NSLayoutConstraint.activate([emptyStateLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
+                                         emptyStateLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
+                                         emptyStateLabel.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: 16),
+                                         emptyStateLabel.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -16)])
+        }
+        
+        emptyStateLabel.stringValue = message
+        emptyStateLabel.isHidden = !isVisible
     }
     
     func selectContentCard(at index: Int) {
@@ -79,7 +110,7 @@ final class ContentSourceCardView: NSView {
         
         let pad: CGFloat = 4
         let labelHeight: CGFloat = 22
-        let previewHeight: CGFloat = max(frame.height - labelHeight - pad * 2 - 2, 10)
+        let previewHeight: CGFloat = max(frame.height - labelHeight - pad - 2, 10)
         
         // Content preview thumbnail at the top
         preview.frame = NSRect(x: pad, y: pad, width: frame.width - pad * 2, height: previewHeight)
@@ -93,7 +124,7 @@ final class ContentSourceCardView: NSView {
         // Content name label at the bottom
         label.frame = NSRect(x: pad, y: previewHeight + pad + 2, width: frame.width - pad * 2, height: labelHeight)
         label.stringValue = name
-        label.font = .systemFont(ofSize: 10)
+        label.font = .systemFont(ofSize: 12)
         label.alignment = .center
         label.lineBreakMode = .byTruncatingTail
         label.textColor = .labelColor

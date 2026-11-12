@@ -11,6 +11,7 @@ final class PresentationCoordinator {
 
     private var activeSource: ContentSource?
     private var presentationID: UInt64 = 0
+    private var captureSettingsObserver: NSObjectProtocol?
 
     init(liveWindow: LiveWindow) {
         self.liveWindow = liveWindow
@@ -21,9 +22,22 @@ final class PresentationCoordinator {
         iOSDevicePipeline.onDeviceLost = { [weak self] activation in
             self?.captureDeviceWasLost(activation, kind: .iOSDevice)
         }
+        captureSettingsObserver = NotificationCenter.default.addObserver(forName: .captureSettingsDidChange,
+                                                                         object: ApplicationSettings.shared,
+                                                                         queue: .main) { [weak self] _ in
+            self?.restartDesktopCaptureIfNeeded()
+        }
+    }
+
+    deinit {
+        if let observer = captureSettingsObserver { NotificationCenter.default.removeObserver(observer) }
     }
 
     func present(_ source: ContentSource) {
+        present(source, activatesWindow: true)
+    }
+
+    private func present(_ source: ContentSource, activatesWindow: Bool) {
         guard let liveWindow = liveWindow else { return }
         presentationID &+= 1
         let currentID = presentationID
@@ -36,7 +50,7 @@ final class PresentationCoordinator {
 
         switch source {
         case .applicationWindow, .screen:
-            desktopCapture.start(source: source, onFrame: { [weak self] image in
+            desktopCapture.start(source: source, activatesWindow: activatesWindow, onFrame: { [weak self] image in
                 guard let self = self,
                       self.presentationID == currentID,
                       self.activeSource == source else { return }
@@ -87,6 +101,16 @@ final class PresentationCoordinator {
         guard presentationID == activation.presentationID,
               activeSource == source else { return }
         onSourceLost?(source)
+    }
+
+    private func restartDesktopCaptureIfNeeded() {
+        guard let source = activeSource else { return }
+        switch source {
+        case .applicationWindow, .screen:
+            present(source, activatesWindow: false)
+        case .videoDevice, .iOSDevice:
+            break
+        }
     }
 
 }
