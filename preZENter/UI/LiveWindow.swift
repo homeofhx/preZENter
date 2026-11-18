@@ -15,8 +15,9 @@ final class LiveWindow: NSWindowController {
     private var videoDevicePreview: CapturePreviewView!
     private var iOSDevicePreview: CapturePreviewView!
     private var idleView: NSImageView!
+    private var sourceNameLabel: NSTextField!
     private var fadeOverlay: NSView!
-
+    private var presentedSourceName = ""
     private var activePresentationID: UInt64 = 0
     private var transitionID: UInt64 = 0
     private var idleScreenTimer: Timer?
@@ -60,6 +61,19 @@ final class LiveWindow: NSWindowController {
         idleView.wantsLayer = true
         contentView.addSubview(idleView)
 
+        sourceNameLabel = NSTextField(labelWithString: "")
+        sourceNameLabel.textColor = .white
+        sourceNameLabel.maximumNumberOfLines = 1
+        sourceNameLabel.cell?.lineBreakMode = .byTruncatingTail
+        sourceNameLabel.cell?.usesSingleLineMode = true
+        let textShadow = NSShadow()
+        textShadow.shadowColor = NSColor.black.withAlphaComponent(0.9)
+        textShadow.shadowBlurRadius = 3
+        textShadow.shadowOffset = NSSize(width: 0, height: -1)
+        sourceNameLabel.shadow = textShadow
+        sourceNameLabel.isHidden = true
+        contentView.addSubview(sourceNameLabel)
+
         fadeOverlay = NSView(frame: contentView.bounds)
         fadeOverlay.autoresizingMask = [.width, .height]
         fadeOverlay.wantsLayer = true
@@ -68,6 +82,7 @@ final class LiveWindow: NSWindowController {
         contentView.addSubview(fadeOverlay)
 
         refreshIdleScreenContents()
+        updateLiveWindowText()
         idleView.isHidden = false
         liveWindow.makeKeyAndOrderFront(nil)
         updateTitleBarVisibilityForCurrentMouseLocation()
@@ -96,6 +111,11 @@ final class LiveWindow: NSWindowController {
         videoDevicePreview.isHidden = true
         iOSDevicePreview.isHidden = true
         updatePresentationStatus()
+    }
+
+    func setPresentedSourceName(_ name: String?) {
+        presentedSourceName = name ?? ""
+        updateLiveWindowText()
     }
 
     func showImage(_ image: NSImage, presentationID: UInt64) {
@@ -153,8 +173,16 @@ final class LiveWindow: NSWindowController {
         let currentTransitionID = transitionID
         fadeOverlay.layer?.removeAllAnimations()
 
+        let settings = ApplicationSettings.shared
+        let duration = settings.transitionDuration
+        guard settings.fadesBetweenContents, duration > 0 else {
+            fadeOverlay.alphaValue = 0
+            switchContent()
+            return
+        }
+
         NSAnimationContext.runAnimationGroup({ context in
-            context.duration = 0.25
+            context.duration = duration
             context.timingFunction = CAMediaTimingFunction(name: .easeIn)
             fadeOverlay.animator().alphaValue = 1.0
         }) { [weak self] in
@@ -162,7 +190,7 @@ final class LiveWindow: NSWindowController {
                   self.transitionID == currentTransitionID else { return }
             switchContent()
             NSAnimationContext.runAnimationGroup({ context in
-                context.duration = 0.25
+                context.duration = duration
                 context.timingFunction = CAMediaTimingFunction(name: .easeOut)
                 self.fadeOverlay.animator().alphaValue = 0.0
             })
@@ -207,6 +235,7 @@ final class LiveWindow: NSWindowController {
             object: window,
             queue: .main) { [weak self] _ in
                 self?.refreshIdleScreenContents()
+                self?.layoutLiveWindowText()
         })
         lifecycleObservers.append(NotificationCenter.default.addObserver(
             forName: .idleScreenSettingsDidChange,
@@ -216,6 +245,55 @@ final class LiveWindow: NSWindowController {
                 self.refreshIdleScreenContents()
                 if !self.idleView.isHidden { self.updateIdleScreenTimerVisibility() }
         })
+        lifecycleObservers.append(NotificationCenter.default.addObserver(
+            forName: .liveWindowTextSettingsDidChange,
+            object: nil,
+            queue: .main) { [weak self] _ in
+            self?.updateLiveWindowText()
+        })
+    }
+
+    private func updateLiveWindowText() {
+        guard sourceNameLabel != nil else { return }
+        let settings = LiveWindowTextSettings.shared
+        let text: String
+        if settings.showsPresentedSourceName {
+            text = presentedSourceName
+        } else if settings.showsCustomText {
+            text = settings.customText
+        } else {
+            text = ""
+        }
+
+        sourceNameLabel.stringValue = text
+        sourceNameLabel.font = .systemFont(ofSize: settings.fontSize, weight: .semibold)
+        sourceNameLabel.isHidden = text.isEmpty
+        layoutLiveWindowText()
+    }
+
+    private func layoutLiveWindowText() {
+        guard let contentView = window?.contentView,
+              sourceNameLabel != nil,
+              !sourceNameLabel.isHidden else { return }
+
+        let settings = LiveWindowTextSettings.shared
+        let gap: CGFloat = 16
+        let maximumWidth = max(contentView.bounds.width - gap * 2, 1)
+        let fittingSize = sourceNameLabel.fittingSize
+        let labelSize = NSSize(width: min(ceil(fittingSize.width), maximumWidth), height: ceil(fittingSize.height))
+        let origin: NSPoint
+        switch settings.position {
+        case .topLeft:
+            origin = NSPoint(x: gap, y: contentView.bounds.height - gap - labelSize.height)
+        case .topRight:
+            origin = NSPoint(x: contentView.bounds.width - gap - labelSize.width,
+                             y: contentView.bounds.height - gap - labelSize.height)
+        case .bottomLeft:
+            origin = NSPoint(x: gap, y: gap)
+        case .bottomRight:
+            origin = NSPoint(x: contentView.bounds.width - gap - labelSize.width, y: gap)
+        }
+        sourceNameLabel.frame = NSRect(origin: origin, size: labelSize)
     }
 
     private func updateTitleBarVisibilityForCurrentMouseLocation() {

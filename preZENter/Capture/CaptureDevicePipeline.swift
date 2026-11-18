@@ -23,6 +23,11 @@ final class CaptureDevicePipeline {
     private var currentDevice: AVCaptureDevice?
     private var currentSession: AVCaptureSession?
     private var audioPreviewOutput: AVCaptureAudioPreviewOutput?
+    private var audioDataOutput: AVCaptureAudioDataOutput?
+    private var monoAudioPreview: MonoAudioPreview?
+    private var outputVolume: Float = 1
+    private var isAudioMuted = false
+    private var usesMonoAudioOutput = false
 
     init(channel: CapturePreviewChannel, queueLabel: String) {
         self.channel = channel
@@ -38,7 +43,7 @@ final class CaptureDevicePipeline {
 
             if let session = self.currentSession,
                self.currentDevice?.uniqueID == uniqueID {
-                self.audioPreviewOutput?.volume = 1.0
+                self.applyAudioOutput(isActive: true)
                 self.present(session, activation: activation, liveWindow: liveWindow)
                 return
             }
@@ -59,7 +64,7 @@ final class CaptureDevicePipeline {
 
         sessionQueue.async { [weak self, weak liveWindow] in
             guard let self = self else { return }
-            self.audioPreviewOutput?.volume = 0
+            self.applyAudioOutput(isActive: false)
             guard let session = self.currentSession else { return }
             DispatchQueue.main.async {
                 liveWindow?.hideCapturePreview(session: session, channel: self.channel, presentationID: activation.presentationID)
@@ -75,6 +80,16 @@ final class CaptureDevicePipeline {
                 DispatchQueue.main.async { liveWindow?.detachCapturePreview(session: session, channel: self.channel) }
             }
             self.teardownCurrentSession()
+        }
+    }
+
+    func updateAudioConfiguration(volume: Float, isMuted: Bool, usesMonoOutput: Bool) {
+        sessionQueue.async { [weak self] in
+            guard let self = self else { return }
+            self.outputVolume = max(0, min(volume, 1))
+            self.isAudioMuted = isMuted
+            self.usesMonoAudioOutput = usesMonoOutput
+            self.applyAudioOutput(isActive: self.hasRequestedActivation())
         }
     }
 
@@ -101,8 +116,17 @@ final class CaptureDevicePipeline {
         }
 
         let audioPreview = AVCaptureAudioPreviewOutput()
-        audioPreview.volume = 1.0
+        audioPreview.volume = 0
         if session.canAddOutput(audioPreview) { session.addOutput(audioPreview) }
+
+        let audioDataOutput = AVCaptureAudioDataOutput()
+        var monoAudioPreview: MonoAudioPreview?
+        if session.canAddOutput(audioDataOutput) {
+            session.addOutput(audioDataOutput)
+            let preview = MonoAudioPreview()
+            preview.attach(to: audioDataOutput)
+            monoAudioPreview = preview
+        }
         if device.supportsSessionPreset(.high) { session.sessionPreset = .high }
         session.commitConfiguration()
 
@@ -114,13 +138,16 @@ final class CaptureDevicePipeline {
         currentDevice = device
         currentSession = session
         audioPreviewOutput = audioPreview
+        self.audioDataOutput = monoAudioPreview == nil ? nil : audioDataOutput
+        self.monoAudioPreview = monoAudioPreview
         session.startRunning()
 
         guard isRequested(activation) else {
-            audioPreview.volume = 0
+            applyAudioOutput(isActive: false)
             return
         }
 
+        applyAudioOutput(isActive: true)
         present(session, activation: activation, liveWindow: liveWindow)
     }
 
@@ -140,8 +167,12 @@ final class CaptureDevicePipeline {
     }
 
     private func teardownCurrentSession() {
+        audioDataOutput?.setSampleBufferDelegate(nil, queue: nil)
+        monoAudioPreview?.stop()
         currentDevice = nil
         audioPreviewOutput = nil
+        audioDataOutput = nil
+        monoAudioPreview = nil
         guard let session = currentSession else { return }
         currentSession = nil
         teardown(session: session)
@@ -174,6 +205,156 @@ final class CaptureDevicePipeline {
         let isCurrent = requestedActivation == activation
         stateLock.unlock()
         return isCurrent
+    }
+
+    private func hasRequestedActivation() -> Bool {
+        stateLock.lock()
+        let hasActivation = requestedActivation != nil
+        stateLock.unlock()
+        return hasActivation
+    }
+
+    private func applyAudioOutput(isActive: Bool) {
+        let audibleVolume = isActive && !isAudioMuted ? outputVolume : 0
+        let canRenderMono = usesMonoAudioOutput && monoAudioPreview != nil
+        audioPreviewOutput?.volume = canRenderMono ? 0 : audibleVolume
+        monoAudioPreview?.configure(isActive: canRenderMono && audibleVolume > 0, volume: audibleVolume)
+    }
+
+}
+
+private final class MonoAudioPreview: NSObject, AVCaptureAudioDataOutputSampleBufferDelegate {
+
+    private let queue = DispatchQueue(label: "com.prezenter.capture.mono-audio")
+    private let engine = AVAudioEngine()
+    private let player = AVAudioPlayerNode()
+    private var inputFormat: AVAudioFormat?
+    private var monoFormat: AVAudioFormat?
+    private var converter: AVAudioConverter?
+    private var isActive = false
+    private var volume: Float = 1
+
+    override init() {
+        super.init()
+        engine.attach(player)
+    }
+
+    func attach(to output: AVCaptureAudioDataOutput) {
+        output.setSampleBufferDelegate(self, queue: queue)
+    }
+
+    func configure(isActive: Bool, volume: Float) {
+        queue.async { [weak self] in
+            guard let self = self else { return }
+            self.isActive = isActive
+            self.volume = volume
+            self.player.volume = volume
+            if !isActive { self.stopPlayback() }
+        }
+    }
+
+    func stop() {
+        queue.async { [weak self] in
+            self?.isActive = false
+            self?.stopPlayback()
+        }
+    }
+
+    func captureOutput(_ output: AVCaptureOutput,
+                       didOutput sampleBuffer: CMSampleBuffer,
+                       from connection: AVCaptureConnection) {
+        guard isActive,
+              let formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer),
+              let streamDescription = CMAudioFormatDescriptionGetStreamBasicDescription(formatDescription),
+              let format = AVAudioFormat(streamDescription: streamDescription),
+              let inputBuffer = makePCMBuffer(from: sampleBuffer, format: format) else { return }
+
+        if inputFormat?.isEqual(format) != true || converter == nil {
+            guard configureEngine(inputFormat: format) else { return }
+        } else if !startPlaybackIfNeeded() {
+            return
+        }
+
+        guard let monoFormat = monoFormat,
+              let converter = converter,
+              let outputBuffer = AVAudioPCMBuffer(pcmFormat: monoFormat,
+                                                  frameCapacity: inputBuffer.frameCapacity) else { return }
+        do {
+            try converter.convert(to: outputBuffer, from: inputBuffer)
+            player.scheduleBuffer(outputBuffer)
+        } catch {
+            return
+        }
+    }
+
+    private func makePCMBuffer(from sampleBuffer: CMSampleBuffer, format: AVAudioFormat) -> AVAudioPCMBuffer? {
+        let frameCount = AVAudioFrameCount(CMSampleBufferGetNumSamples(sampleBuffer))
+        guard frameCount > 0,
+              let pcmBuffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCount) else { return nil }
+
+        let sourceBufferList = AudioBufferList.allocate(maximumBuffers: max(Int(format.channelCount), 1))
+        defer { sourceBufferList.unsafeMutablePointer.deallocate() }
+        var retainedBlockBuffer: CMBlockBuffer?
+        let status = CMSampleBufferGetAudioBufferListWithRetainedBlockBuffer(
+            sampleBuffer,
+            bufferListSizeNeededOut: nil,
+            bufferListOut: sourceBufferList.unsafeMutablePointer,
+            bufferListSize: AudioBufferList.sizeInBytes(maximumBuffers: max(Int(format.channelCount), 1)),
+            blockBufferAllocator: kCFAllocatorDefault,
+            blockBufferMemoryAllocator: kCFAllocatorDefault,
+            flags: 0,
+            blockBufferOut: &retainedBlockBuffer)
+        guard status == noErr else { return nil }
+
+        pcmBuffer.frameLength = frameCount
+        let destinationBuffers = UnsafeMutableAudioBufferListPointer(pcmBuffer.mutableAudioBufferList)
+        guard sourceBufferList.count == destinationBuffers.count else { return nil }
+        for index in 0..<sourceBufferList.count {
+            let source = sourceBufferList[index]
+            guard let sourceData = source.mData,
+                  let destinationData = destinationBuffers[index].mData else { return nil }
+            let byteCount = min(Int(source.mDataByteSize), Int(destinationBuffers[index].mDataByteSize))
+            memcpy(destinationData, sourceData, byteCount)
+            destinationBuffers[index].mDataByteSize = UInt32(byteCount)
+        }
+        return pcmBuffer
+    }
+
+    private func configureEngine(inputFormat: AVAudioFormat) -> Bool {
+        guard let monoFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32,
+                                             sampleRate: inputFormat.sampleRate,
+                                             channels: 1,
+                                             interleaved: false),
+              let converter = AVAudioConverter(from: inputFormat, to: monoFormat) else { return false }
+
+        stopPlayback()
+        engine.disconnectNodeOutput(player)
+        engine.connect(player, to: engine.mainMixerNode, format: monoFormat)
+        self.inputFormat = inputFormat
+        self.monoFormat = monoFormat
+        self.converter = converter
+        return startPlaybackIfNeeded()
+    }
+
+    private func startPlaybackIfNeeded() -> Bool {
+        guard isActive else { return false }
+        player.volume = volume
+        do {
+            if !engine.isRunning {
+                engine.prepare()
+                try engine.start()
+            }
+            if !player.isPlaying { player.play() }
+            return true
+        } catch {
+            return false
+        }
+    }
+
+    private func stopPlayback() {
+        player.stop()
+        engine.stop()
+        engine.reset()
     }
 
 }

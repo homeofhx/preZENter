@@ -2,7 +2,16 @@ import Cocoa
 import CoreAudio
 
 final class SystemSwitcher {
+    private static let screenConfirmationDelay: TimeInterval = 0.05
+    private static let screenSettlingDelay: TimeInterval = 0.15
+    private static let maximumScreenConfirmationAttempts = 40
+    
     private var displayMoveID: UInt64 = 0
+    private var fullScreenExitObserver: NSObjectProtocol?
+    
+    deinit {
+        removeFullScreenExitObserver()
+    }
     
     // MARK: - Display Switcher
     
@@ -20,25 +29,95 @@ final class SystemSwitcher {
     }
     
     func moveLiveWindow(_ window: NSWindow, to screen: NSScreen) {
+        moveLiveWindowToFullScreen(window, to: screen)
+    }
+    
+    func moveLiveWindowToFullScreen(_ window: NSWindow, to screen: NSScreen) {
         displayMoveID &+= 1
         let currentMoveID = displayMoveID
+        removeFullScreenExitObserver()
+        
+        guard let targetDisplayID = screen.displayID else { return }
+        if window.styleMask.contains(.fullScreen), window.screen?.displayID == targetDisplayID { return }
         
         if window.styleMask.contains(.fullScreen) {
-            window.toggleFullScreen(nil)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.25) { [weak self, weak window] in
-                guard let self = self,
-                      self.displayMoveID == currentMoveID,
-                      let window = window else { return }
-                self.moveLiveWindowThenToggleFullScreen(window: window, screen: screen)
+            fullScreenExitObserver = NotificationCenter.default.addObserver(
+                forName: NSWindow.didExitFullScreenNotification,
+                object: window,
+                queue: .main) { [weak self, weak window] _ in
+                    guard let self = self else { return }
+                    self.removeFullScreenExitObserver()
+                    guard self.displayMoveID == currentMoveID,
+                          let window = window else { return }
+                    DispatchQueue.main.async { [weak self, weak window] in
+                        guard let self = self,
+                              self.displayMoveID == currentMoveID,
+                              let window = window else { return }
+                        self.moveThenEnterFullScreen(window: window,
+                                                     screen: screen,
+                                                     targetDisplayID: targetDisplayID,
+                                                     moveID: currentMoveID)
+                    }
             }
+            window.toggleFullScreen(nil)
         } else {
-            moveLiveWindowThenToggleFullScreen(window: window, screen: screen)
+            moveThenEnterFullScreen(window: window,
+                                    screen: screen,
+                                    targetDisplayID: targetDisplayID,
+                                    moveID: currentMoveID)
         }
     }
     
-    private func moveLiveWindowThenToggleFullScreen(window: NSWindow, screen: NSScreen) {
-        window.setFrameOrigin(screen.frame.origin)
-        window.toggleFullScreen(nil)
+    private func moveThenEnterFullScreen(window: NSWindow,
+                                         screen: NSScreen,
+                                         targetDisplayID: CGDirectDisplayID,
+                                         moveID: UInt64) {
+        let targetFrame = screen.visibleFrame
+        let origin = NSPoint(x: targetFrame.midX - window.frame.width / 2, y: targetFrame.midY - window.frame.height / 2)
+        window.setFrameOrigin(origin)
+        waitForTargetScreen(window: window,
+                            targetDisplayID: targetDisplayID,
+                            moveID: moveID,
+                            attemptsRemaining: SystemSwitcher.maximumScreenConfirmationAttempts)
+    }
+    
+    private func waitForTargetScreen(window: NSWindow,
+                                     targetDisplayID: CGDirectDisplayID,
+                                     moveID: UInt64,
+                                     attemptsRemaining: Int) {
+        guard displayMoveID == moveID,
+              !window.styleMask.contains(.fullScreen) else { return }
+        
+        if window.screen?.displayID == targetDisplayID {
+            DispatchQueue.main.asyncAfter(deadline: .now() + SystemSwitcher.screenSettlingDelay) {
+                [weak self, weak window] in
+                guard let self = self,
+                      self.displayMoveID == moveID,
+                      let window = window,
+                      window.screen?.displayID == targetDisplayID,
+                      !window.styleMask.contains(.fullScreen) else { return }
+                window.toggleFullScreen(nil)
+            }
+            return
+        }
+        
+        guard attemptsRemaining > 0 else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + SystemSwitcher.screenConfirmationDelay) {
+            [weak self, weak window] in
+            guard let self = self,
+                  self.displayMoveID == moveID,
+                  let window = window else { return }
+            self.waitForTargetScreen(window: window,
+                                     targetDisplayID: targetDisplayID,
+                                     moveID: moveID,
+                                     attemptsRemaining: attemptsRemaining - 1)
+        }
+    }
+    
+    private func removeFullScreenExitObserver() {
+        guard let observer = fullScreenExitObserver else { return }
+        NotificationCenter.default.removeObserver(observer)
+        fullScreenExitObserver = nil
     }
     
     // MARK: - Audio Switcher

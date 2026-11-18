@@ -56,7 +56,8 @@ final class AppEnvironmentController {
         let connectedDisplayIDs = currentDisplayIDs.subtracting(knownDisplayIDs)
         knownDisplayIDs = currentDisplayIDs
 
-        guard ApplicationSettings.shared.promptsForExternalDisplay else { return }
+        let settings = ApplicationSettings.shared
+        guard settings.promptsForExternalDisplay || settings.automaticallyMovesLiveWindow else { return }
         guard let displayID = connectedDisplayIDs.first(where: { CGDisplayIsBuiltin($0) == 0 }) else { return }
         onExternalDisplayConnected?(displayID)
     }

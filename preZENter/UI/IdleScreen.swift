@@ -65,41 +65,160 @@ class IdleScreenSettings {
     }
     
     private let defaults = UserDefaults.standard
-    
-    var message: String {
-        get { defaults.string(forKey: Keys.message) ?? "Program about to begin.\nPlease stand by." }
-        set { defaults.set(newValue, forKey: Keys.message) }
+
+    private enum Default {
+        static let message = "Program about to begin.\nPlease stand by."
+        static let fontSize: CGFloat = 85
+        static let showTime = false
     }
     
+    var message: String { return defaults.string(forKey: Keys.message) ?? Default.message }
+    
     var messageFontSize: CGFloat {
-        get {
-            let size = defaults.double(forKey: Keys.fontSize)
-            return size > 0 ? CGFloat(size) : 85
-        }
-        set { defaults.set(Double(newValue), forKey: Keys.fontSize) }
+        let size = defaults.double(forKey: Keys.fontSize)
+        return size > 0 ? max(1, min(CGFloat(size), 500)) : Default.fontSize
     }
     
     var showTime: Bool {
-        get { defaults.object(forKey: Keys.showTime) == nil ? false : defaults.bool(forKey: Keys.showTime) }
-        set { defaults.set(newValue, forKey: Keys.showTime) }
+        return defaults.object(forKey: Keys.showTime) == nil ? Default.showTime : defaults.bool(forKey: Keys.showTime)
     }
     
     private init() {}
     
-    func update(message: String, fontSize: CGFloat, showTime: Bool) {
-        self.message = message.trimmingCharacters(in: .newlines)
-        messageFontSize = fontSize > 0 ? fontSize : 85
-        self.showTime = showTime
+    func updateMessage(_ message: String) {
+        guard self.message != message else { return }
+        defaults.set(message, forKey: Keys.message)
+        notifyChange()
+    }
+    
+    func updateFontSize(_ fontSize: CGFloat) {
+        let validatedSize = max(1, min(fontSize, 500))
+        guard messageFontSize != validatedSize else { return }
+        defaults.set(Double(validatedSize), forKey: Keys.fontSize)
+        notifyChange()
+    }
+    
+    func updateShowTime(_ showTime: Bool) {
+        guard self.showTime != showTime else { return }
+        defaults.set(showTime, forKey: Keys.showTime)
+        notifyChange()
+    }
+    
+    private func notifyChange() {
         NotificationCenter.default.post(name: .idleScreenSettingsDidChange, object: nil)
     }
     
     func resetToDefaults() {
-        message = "Program about to begin.\nPlease stand by."
-        messageFontSize = 85
-        showTime = false
-        NotificationCenter.default.post(name: .idleScreenSettingsDidChange, object: nil)
+        defaults.set(Default.message, forKey: Keys.message)
+        defaults.set(Double(Default.fontSize), forKey: Keys.fontSize)
+        defaults.set(Default.showTime, forKey: Keys.showTime)
+        notifyChange()
     }
     
+}
+
+enum LiveWindowTextPosition: Int {
+    case topLeft
+    case topRight
+    case bottomLeft
+    case bottomRight
+    
+    static let all: [LiveWindowTextPosition] = [.topLeft, .topRight, .bottomLeft, .bottomRight]
+    
+    var title: String {
+        switch self {
+        case .topLeft: return "Top Left"
+        case .topRight: return "Top Right"
+        case .bottomLeft: return "Bottom Left"
+        case .bottomRight: return "Bottom Right"
+        }
+    }
+}
+
+final class LiveWindowTextSettings {
+    
+    static let shared = LiveWindowTextSettings()
+    
+    enum Default {
+        static let fontSize: CGFloat = 12
+        static let position = LiveWindowTextPosition.bottomRight
+    }
+    
+    private enum Key {
+        static let showsPresentedSourceName = "liveWindowShowsPresentedSourceName"
+        static let showsCustomText = "liveWindowShowsCustomText"
+        static let customText = "liveWindowCustomText"
+        static let fontSize = "liveWindowTextFontSize"
+        static let position = "liveWindowTextPosition"
+    }
+    
+    private let defaults: UserDefaults
+    
+    private init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        defaults.register(defaults: [Key.showsPresentedSourceName: false,
+                                     Key.showsCustomText: false,
+                                     Key.customText: "",
+                                     Key.fontSize: Double(Default.fontSize),
+                                     Key.position: Default.position.rawValue])
+        if defaults.bool(forKey: Key.showsPresentedSourceName),
+           defaults.bool(forKey: Key.showsCustomText) {
+            defaults.set(false, forKey: Key.showsCustomText)
+        }
+    }
+    
+    var showsPresentedSourceName: Bool { return defaults.bool(forKey: Key.showsPresentedSourceName) }
+    var showsCustomText: Bool { return defaults.bool(forKey: Key.showsCustomText) }
+    var customText: String { return defaults.string(forKey: Key.customText) ?? "" }
+    var fontSize: CGFloat { return max(1, min(CGFloat(defaults.double(forKey: Key.fontSize)), 500)) }
+    var position: LiveWindowTextPosition {
+        return LiveWindowTextPosition(rawValue: defaults.integer(forKey: Key.position)) ?? Default.position
+    }
+    
+    func updateShowsPresentedSourceName(_ isEnabled: Bool) {
+        guard showsPresentedSourceName != isEnabled || (isEnabled && showsCustomText) else { return }
+        defaults.set(isEnabled, forKey: Key.showsPresentedSourceName)
+        if isEnabled { defaults.set(false, forKey: Key.showsCustomText) }
+        notifyChange()
+    }
+    
+    func updateShowsCustomText(_ isEnabled: Bool) {
+        guard showsCustomText != isEnabled || (isEnabled && showsPresentedSourceName) else { return }
+        defaults.set(isEnabled, forKey: Key.showsCustomText)
+        if isEnabled { defaults.set(false, forKey: Key.showsPresentedSourceName) }
+        notifyChange()
+    }
+    
+    func updateCustomText(_ text: String) {
+        let singleLineText = text.replacingOccurrences(of: "\n", with: " ")
+        guard customText != singleLineText else { return }
+        defaults.set(singleLineText, forKey: Key.customText)
+        notifyChange()
+    }
+    
+    func updateFontSize(_ fontSize: CGFloat) {
+        let validatedSize = max(1, min(fontSize, 500))
+        guard self.fontSize != validatedSize else { return }
+        defaults.set(Double(validatedSize), forKey: Key.fontSize)
+        notifyChange()
+    }
+    
+    func updatePosition(_ position: LiveWindowTextPosition) {
+        guard self.position != position else { return }
+        defaults.set(position.rawValue, forKey: Key.position)
+        notifyChange()
+    }
+    
+    func resetTextAppearance() {
+        defaults.set(Double(Default.fontSize), forKey: Key.fontSize)
+        defaults.set(Default.position.rawValue, forKey: Key.position)
+        notifyChange()
+    }
+    
+    private func notifyChange() {
+        NotificationCenter.default.post(name: .liveWindowTextSettingsDidChange, object: nil)
+    }
+
 }
 
 // MARK: - Timer formatter
@@ -114,4 +233,5 @@ private extension DateFormatter {
 
 extension Notification.Name {
     static let idleScreenSettingsDidChange = Notification.Name("idleScreenSettingsDidChange")
+    static let liveWindowTextSettingsDidChange = Notification.Name("liveWindowTextSettingsDidChange")
 }

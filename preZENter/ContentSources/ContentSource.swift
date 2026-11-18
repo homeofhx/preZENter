@@ -105,6 +105,12 @@ struct ContentSourceCatalog {
         }
     }
 
+    func liveWindowName(for source: ContentSource) -> String? {
+        guard let title = title(for: source) else { return nil }
+        guard case .applicationWindow = source else { return title }
+        return title.components(separatedBy: ":").first ?? title
+    }
+
     func source(kind: ContentSourceKind, at index: Int) -> ContentSource? {
         guard index >= 0 else { return nil }
 

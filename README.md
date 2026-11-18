@@ -26,8 +26,6 @@ Various video conferencing apps let you share one window instead of your whole d
 
 **Development Environment:** Xcode 26 since June 2026; Xcode 10 since the first release.
 
-**Beta Version:** Clone/download this repository, then build and run the project in Xcode. Please note that beta versions may contain unimplemented features or unpredictable behaviors.
-
 **License:** [GNU General Public License v3.0](LICENSE)
 
 ## Thanks

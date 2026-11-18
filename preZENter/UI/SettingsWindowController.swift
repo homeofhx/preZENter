@@ -21,7 +21,7 @@ final class SettingsWindowController: NSWindowController {
         tabViewController.tabStyle = .toolbar
         addTab(GeneralSettingsViewController(), title: "General", image: NSImage(named: NSImage.preferencesGeneralName))
         addTab(PresentingSettingsViewController(), title: "Presenting", image: NSImage(named: NSImage.advancedName))
-        addTab(IdleScreenSettingsViewController(), title: "Idle Screen", image: NSImage(named: NSImage.fontPanelName))
+        addTab(CustomizationSettingsViewController(), title: "Customization", image: NSImage(named: NSImage.fontPanelName))
         window.contentViewController = tabViewController
         tabViewController.onSelectionDidChange = { [weak self] in
             self?.resizeForSelectedTab(animated: self?.window?.isVisible == true)
@@ -87,6 +87,7 @@ private final class GeneralSettingsViewController: NSViewController {
 
     private let keepAwakeButton = settingsCheckbox(title: "Keep this Mac awake when preZENter is running")
     private let promptForDisplayButton = settingsCheckbox(title: "Prompt me to move Live Window when an external display is connected")
+    private let automaticallyMoveButton = settingsCheckbox(title: "Automatically move Live Window to the newly connected display")
 
     override func loadView() {
         view = settingsContentView()
@@ -99,6 +100,10 @@ private final class GeneralSettingsViewController: NSViewController {
         promptForDisplayButton.target = self
         promptForDisplayButton.action = #selector(promptForDisplayChanged(_:))
         stack.addArrangedSubview(promptForDisplayButton)
+
+        automaticallyMoveButton.target = self
+        automaticallyMoveButton.action = #selector(automaticallyMoveChanged(_:))
+        stack.addArrangedSubview(automaticallyMoveButton)
         finalizeSettingsLayout(for: self, stack: stack)
     }
 
@@ -106,6 +111,7 @@ private final class GeneralSettingsViewController: NSViewController {
         super.viewWillAppear()
         keepAwakeButton.state = ApplicationSettings.shared.keepsMacAwake ? .on : .off
         promptForDisplayButton.state = ApplicationSettings.shared.promptsForExternalDisplay ? .on : .off
+        automaticallyMoveButton.state = ApplicationSettings.shared.automaticallyMovesLiveWindow ? .on : .off
     }
 
     @objc private func keepAwakeChanged(_ sender: NSButton) {
@@ -114,6 +120,17 @@ private final class GeneralSettingsViewController: NSViewController {
 
     @objc private func promptForDisplayChanged(_ sender: NSButton) {
         ApplicationSettings.shared.promptsForExternalDisplay = sender.state == .on
+        reloadDisplayChoice()
+    }
+
+    @objc private func automaticallyMoveChanged(_ sender: NSButton) {
+        ApplicationSettings.shared.automaticallyMovesLiveWindow = sender.state == .on
+        reloadDisplayChoice()
+    }
+
+    private func reloadDisplayChoice() {
+        promptForDisplayButton.state = ApplicationSettings.shared.promptsForExternalDisplay ? .on : .off
+        automaticallyMoveButton.state = ApplicationSettings.shared.automaticallyMovesLiveWindow ? .on : .off
     }
 
 }
@@ -126,10 +143,20 @@ private final class PresentingSettingsViewController: NSViewController, NSTextFi
     private let resetFrameRateButton = NSButton(title: "Reset to Default", target: nil, action: nil)
     private let hideCursorButton = settingsCheckbox(title: "Hide mouse cursor when capturing application windows and screens")
     private let bringWindowToFrontButton = settingsCheckbox(title: "Bring the selected application's window to the front of all application windows")
+    private let fadeBetweenContentsButton = settingsCheckbox(title: "Fade to black for")
+    private let transitionDurationField = NSTextField(string: "")
+    private let resetTransitionButton = NSButton(title: "Reset to Default", target: nil, action: nil)
+    private let outputVolumeSlider = NSSlider()
+    private let outputVolumeLabel = NSTextField(labelWithString: "100%")
+    private let muteVideoDeviceButton = settingsCheckbox(title: "video capture devices")
+    private let muteIOSDeviceButton = settingsCheckbox(title: "iOS devices")
+    private let monoAudioButton = settingsCheckbox(title: "Mono audio output")
 
     override func loadView() {
         view = settingsContentView()
         let stack = settingsStack(in: view)
+
+        stack.addArrangedSubview(settingsSectionTitle("Video"))
 
         forceCoreGraphicsButton.target = self
         forceCoreGraphicsButton.action = #selector(forceCoreGraphicsChanged(_:))
@@ -162,6 +189,61 @@ private final class PresentingSettingsViewController: NSViewController, NSTextFi
         bringWindowToFrontButton.action = #selector(bringWindowToFrontChanged(_:))
         stack.addArrangedSubview(bringWindowToFrontButton)
 
+        let transitionRow = NSStackView()
+        transitionRow.orientation = .horizontal
+        transitionRow.alignment = .centerY
+        transitionRow.spacing = 8
+        fadeBetweenContentsButton.target = self
+        fadeBetweenContentsButton.action = #selector(fadeBetweenContentsChanged(_:))
+        transitionRow.addArrangedSubview(fadeBetweenContentsButton)
+        transitionDurationField.alignment = .right
+        transitionDurationField.delegate = self
+        transitionDurationField.toolTip = "Enter a duration between 0 and 10 seconds"
+        transitionDurationField.widthAnchor.constraint(equalToConstant: 58).isActive = true
+        transitionRow.addArrangedSubview(transitionDurationField)
+        transitionRow.addArrangedSubview(NSTextField(labelWithString: "seconds when switching between contents"))
+        resetTransitionButton.target = self
+        resetTransitionButton.action = #selector(resetTransition(_:))
+        transitionRow.addArrangedSubview(resetTransitionButton)
+        stack.addArrangedSubview(transitionRow)
+
+        stack.addArrangedSubview(settingsSeparator())
+        stack.addArrangedSubview(settingsSectionTitle("Audio"))
+
+        let volumeRow = NSStackView()
+        volumeRow.orientation = .horizontal
+        volumeRow.alignment = .centerY
+        volumeRow.spacing = 8
+        volumeRow.addArrangedSubview(NSTextField(labelWithString: "Output volume:"))
+        outputVolumeSlider.minValue = 0
+        outputVolumeSlider.maxValue = 100
+        outputVolumeSlider.isContinuous = true
+        outputVolumeSlider.target = self
+        outputVolumeSlider.action = #selector(outputVolumeChanged(_:))
+        outputVolumeSlider.widthAnchor.constraint(equalToConstant: 280).isActive = true
+        volumeRow.addArrangedSubview(outputVolumeSlider)
+        outputVolumeLabel.alignment = .right
+        outputVolumeLabel.widthAnchor.constraint(equalToConstant: 46).isActive = true
+        volumeRow.addArrangedSubview(outputVolumeLabel)
+        stack.addArrangedSubview(volumeRow)
+
+        let muteRow = NSStackView()
+        muteRow.orientation = .horizontal
+        muteRow.alignment = .centerY
+        muteRow.spacing = 8
+        muteRow.addArrangedSubview(NSTextField(labelWithString: "Mute audio from:"))
+        muteVideoDeviceButton.target = self
+        muteVideoDeviceButton.action = #selector(muteVideoDeviceChanged(_:))
+        muteRow.addArrangedSubview(muteVideoDeviceButton)
+        muteIOSDeviceButton.target = self
+        muteIOSDeviceButton.action = #selector(muteIOSDeviceChanged(_:))
+        muteRow.addArrangedSubview(muteIOSDeviceButton)
+        stack.addArrangedSubview(muteRow)
+
+        monoAudioButton.target = self
+        monoAudioButton.action = #selector(monoAudioChanged(_:))
+        stack.addArrangedSubview(monoAudioButton)
+
         updateAvailability()
         finalizeSettingsLayout(for: self, stack: stack)
     }
@@ -172,24 +254,24 @@ private final class PresentingSettingsViewController: NSViewController, NSTextFi
     }
 
     func controlTextDidChange(_ notification: Notification) {
-        guard notification.object as? NSTextField === frameRateField,
-              let editor = frameRateField.currentEditor() as? NSTextView else { return }
-
-        let original = editor.string
-        let selection = editor.selectedRange()
-        let prefixEnd = original.index(original.startIndex, offsetBy: min(selection.location, original.count))
-        let prefix = String(original[..<prefixEnd])
-        let filtered = original.filter { $0 >= "0" && $0 <= "9" }
-        guard filtered != original else { return }
-
-        editor.string = filtered
-        let cursorPosition = prefix.filter { $0 >= "0" && $0 <= "9" }.count
-        editor.setSelectedRange(NSRange(location: cursorPosition, length: 0))
+        guard let field = notification.object as? NSTextField else { return }
+        if field === frameRateField {
+            filterNumericInput(in: frameRateField, allowsDecimalSeparator: false)
+        } else if field === transitionDurationField {
+            filterNumericInput(in: transitionDurationField, allowsDecimalSeparator: true)
+            if let duration = Double(transitionDurationField.stringValue), duration >= 0 {
+                ApplicationSettings.shared.transitionDuration = duration
+            }
+        }
     }
 
     func controlTextDidEndEditing(_ notification: Notification) {
-        guard notification.object as? NSTextField === frameRateField else { return }
-        commitFrameRate()
+        guard let field = notification.object as? NSTextField else { return }
+        if field === frameRateField {
+            commitFrameRate()
+        } else if field === transitionDurationField {
+            commitTransitionDuration()
+        }
     }
 
     @objc private func forceCoreGraphicsChanged(_ sender: NSButton) {
@@ -211,11 +293,47 @@ private final class PresentingSettingsViewController: NSViewController, NSTextFi
         ApplicationSettings.shared.bringsSelectedApplicationWindowToFront = sender.state == .on
     }
 
+    @objc private func fadeBetweenContentsChanged(_ sender: NSButton) {
+        ApplicationSettings.shared.fadesBetweenContents = sender.state == .on
+        updateTransitionAvailability()
+    }
+
+    @objc private func resetTransition(_ sender: Any) {
+        ApplicationSettings.shared.transitionDuration = ApplicationSettings.Defaults.transitionDuration
+        transitionDurationField.stringValue = formattedDuration(ApplicationSettings.Defaults.transitionDuration)
+    }
+
+    @objc private func outputVolumeChanged(_ sender: NSSlider) {
+        let volume = Int(sender.doubleValue.rounded())
+        ApplicationSettings.shared.outputVolume = volume
+        outputVolumeLabel.stringValue = "\(volume)%"
+    }
+
+    @objc private func muteVideoDeviceChanged(_ sender: NSButton) {
+        ApplicationSettings.shared.mutesVideoDeviceAudio = sender.state == .on
+    }
+
+    @objc private func muteIOSDeviceChanged(_ sender: NSButton) {
+        ApplicationSettings.shared.mutesIOSDeviceAudio = sender.state == .on
+    }
+
+    @objc private func monoAudioChanged(_ sender: NSButton) {
+        ApplicationSettings.shared.usesMonoAudioOutput = sender.state == .on
+    }
+
     private func reloadValues() {
         updateAvailability()
         frameRateField.integerValue = ApplicationSettings.shared.coreGraphicsFrameRate
         hideCursorButton.state = ApplicationSettings.shared.hidesCapturedMouseCursor ? .on : .off
         bringWindowToFrontButton.state = ApplicationSettings.shared.bringsSelectedApplicationWindowToFront ? .on : .off
+        fadeBetweenContentsButton.state = ApplicationSettings.shared.fadesBetweenContents ? .on : .off
+        transitionDurationField.stringValue = formattedDuration(ApplicationSettings.shared.transitionDuration)
+        outputVolumeSlider.integerValue = ApplicationSettings.shared.outputVolume
+        outputVolumeLabel.stringValue = "\(ApplicationSettings.shared.outputVolume)%"
+        muteVideoDeviceButton.state = ApplicationSettings.shared.mutesVideoDeviceAudio ? .on : .off
+        muteIOSDeviceButton.state = ApplicationSettings.shared.mutesIOSDeviceAudio ? .on : .off
+        monoAudioButton.state = ApplicationSettings.shared.usesMonoAudioOutput ? .on : .off
+        updateTransitionAvailability()
     }
 
     private func updateAvailability() {
@@ -243,35 +361,59 @@ private final class PresentingSettingsViewController: NSViewController, NSTextFi
         frameRateField.integerValue = ApplicationSettings.shared.coreGraphicsFrameRate
     }
 
+    private func commitTransitionDuration() {
+        let duration = Double(transitionDurationField.stringValue) ?? ApplicationSettings.Defaults.transitionDuration
+        ApplicationSettings.shared.transitionDuration = duration
+        transitionDurationField.stringValue = formattedDuration(ApplicationSettings.shared.transitionDuration)
+    }
+
+    private func updateTransitionAvailability() {
+        let isEnabled = fadeBetweenContentsButton.state == .on
+        transitionDurationField.isEnabled = isEnabled
+        resetTransitionButton.isEnabled = isEnabled
+    }
+
+    private func formattedDuration(_ duration: TimeInterval) -> String {
+        return String(format: "%g", duration)
+    }
+
 }
 
-private final class IdleScreenSettingsViewController: NSViewController {
+private final class CustomizationSettingsViewController: NSViewController, NSTextViewDelegate, NSTextFieldDelegate {
 
     private let messageTextView = NSTextView()
     private let fontSizeField = NSTextField(string: "")
     private let showTimeButton = settingsCheckbox(title: "Show the current time")
+    private let showSourceNameButton = settingsCheckbox(title: "Display the currently presented source's name on Live Window")
+    private let showCustomTextButton = settingsCheckbox(title: "Customized text:")
+    private let customTextField = NSTextField(string: "")
+    private let positionPopup = NSPopUpButton()
+    private let liveWindowTextSizeField = NSTextField(string: "")
 
     override func loadView() {
         view = settingsContentView()
         let stack = settingsStack(in: view)
+
+        stack.addArrangedSubview(settingsSectionTitle("Idle Screen Text"))
 
         let scrollView = NSScrollView()
         scrollView.borderType = .bezelBorder
         scrollView.hasVerticalScroller = true
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.widthAnchor.constraint(equalToConstant: 576).isActive = true
-        scrollView.heightAnchor.constraint(equalToConstant: 155).isActive = true
+        scrollView.heightAnchor.constraint(equalToConstant: 100).isActive = true
 
         messageTextView.isEditable = true
         messageTextView.isRichText = false
         messageTextView.isAutomaticQuoteSubstitutionEnabled = false
         messageTextView.font = .systemFont(ofSize: NSFont.systemFontSize)
-        messageTextView.frame = NSRect(x: 0, y: 0, width: 576, height: 155)
-        messageTextView.minSize = NSSize(width: 0, height: 155)
+        messageTextView.frame = NSRect(x: 0, y: 0, width: 576, height: 100)
+        messageTextView.minSize = NSSize(width: 0, height: 100)
         messageTextView.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
         messageTextView.isVerticallyResizable = true
         messageTextView.autoresizingMask = [.width]
         messageTextView.textContainer?.widthTracksTextView = true
+        messageTextView.delegate = self
         scrollView.documentView = messageTextView
         stack.addArrangedSubview(scrollView)
 
@@ -279,24 +421,57 @@ private final class IdleScreenSettingsViewController: NSViewController {
         optionsRow.orientation = .horizontal
         optionsRow.alignment = .centerY
         optionsRow.spacing = 8
-        optionsRow.addArrangedSubview(NSTextField(labelWithString: "Font size (pt):"))
+        optionsRow.addArrangedSubview(NSTextField(labelWithString: "Text size (pt):"))
 
         let fontSizeFormatter = NumberFormatter()
         fontSizeFormatter.allowsFloats = false
         fontSizeFormatter.minimum = 1
         fontSizeFormatter.maximum = 500
         fontSizeField.formatter = fontSizeFormatter
+        fontSizeField.delegate = self
         fontSizeField.widthAnchor.constraint(equalToConstant: 64).isActive = true
         optionsRow.addArrangedSubview(fontSizeField)
+        showTimeButton.target = self
+        showTimeButton.action = #selector(showTimeChanged(_:))
         optionsRow.addArrangedSubview(showTimeButton)
+        optionsRow.addArrangedSubview(NSButton(title: "Reset to Default", target: self, action: #selector(resetIdleScreenSettings(_:))))
         stack.addArrangedSubview(optionsRow)
 
-        let buttonRow = NSStackView()
-        buttonRow.orientation = .horizontal
-        buttonRow.spacing = 8
-        buttonRow.addArrangedSubview(NSButton(title: "Save Idle Screen Settings", target: self, action: #selector(saveSettings(_:))))
-        buttonRow.addArrangedSubview(NSButton(title: "Reset to Default", target: self, action: #selector(resetSettings(_:))))
-        stack.addArrangedSubview(buttonRow)
+        stack.addArrangedSubview(settingsSeparator())
+        stack.addArrangedSubview(settingsSectionTitle("Text on Live Window"))
+
+        showSourceNameButton.target = self
+        showSourceNameButton.action = #selector(showSourceNameChanged(_:))
+        stack.addArrangedSubview(showSourceNameButton)
+
+        let customTextRow = NSStackView()
+        customTextRow.orientation = .horizontal
+        customTextRow.alignment = .centerY
+        customTextRow.spacing = 8
+        showCustomTextButton.target = self
+        showCustomTextButton.action = #selector(showCustomTextChanged(_:))
+        customTextRow.addArrangedSubview(showCustomTextButton)
+        customTextField.delegate = self
+        customTextField.placeholderString = "Text to display"
+        customTextField.widthAnchor.constraint(equalToConstant: 360).isActive = true
+        customTextRow.addArrangedSubview(customTextField)
+        stack.addArrangedSubview(customTextRow)
+
+        let liveWindowTextOptionsRow = NSStackView()
+        liveWindowTextOptionsRow.orientation = .horizontal
+        liveWindowTextOptionsRow.alignment = .centerY
+        liveWindowTextOptionsRow.spacing = 8
+        liveWindowTextOptionsRow.addArrangedSubview(NSTextField(labelWithString: "Position:"))
+        positionPopup.addItems(withTitles: LiveWindowTextPosition.all.map { $0.title })
+        positionPopup.target = self
+        positionPopup.action = #selector(positionChanged(_:))
+        liveWindowTextOptionsRow.addArrangedSubview(positionPopup)
+        liveWindowTextOptionsRow.addArrangedSubview(NSTextField(labelWithString: "Text size (pt):"))
+        liveWindowTextSizeField.delegate = self
+        liveWindowTextSizeField.widthAnchor.constraint(equalToConstant: 64).isActive = true
+        liveWindowTextOptionsRow.addArrangedSubview(liveWindowTextSizeField)
+        liveWindowTextOptionsRow.addArrangedSubview(NSButton(title: "Reset to Default", target: self, action: #selector(resetLiveWindowTextAppearance(_:))))
+        stack.addArrangedSubview(liveWindowTextOptionsRow)
         finalizeSettingsLayout(for: self, stack: stack)
     }
 
@@ -305,22 +480,92 @@ private final class IdleScreenSettingsViewController: NSViewController {
         reloadValues()
     }
 
-    @objc private func saveSettings(_ sender: Any) {
-        let fontSize = CGFloat(fontSizeField.doubleValue)
-        IdleScreenSettings.shared.update(message: messageTextView.string, fontSize: fontSize, showTime: showTimeButton.state == .on)
-        reloadValues()
+    func textDidChange(_ notification: Notification) {
+        guard notification.object as? NSTextView === messageTextView else { return }
+        IdleScreenSettings.shared.updateMessage(messageTextView.string)
     }
 
-    @objc private func resetSettings(_ sender: Any) {
+    func controlTextDidChange(_ notification: Notification) {
+        guard let field = notification.object as? NSTextField else { return }
+        if field === fontSizeField {
+            filterNumericInput(in: field, allowsDecimalSeparator: false)
+            if let size = Double(field.stringValue), size > 0 {
+                IdleScreenSettings.shared.updateFontSize(CGFloat(size))
+            }
+        } else if field === liveWindowTextSizeField {
+            filterNumericInput(in: field, allowsDecimalSeparator: false)
+            if let size = Double(field.stringValue), size > 0 {
+                LiveWindowTextSettings.shared.updateFontSize(CGFloat(size))
+            }
+        } else if field === customTextField {
+            LiveWindowTextSettings.shared.updateCustomText(field.stringValue)
+        }
+    }
+
+    func controlTextDidEndEditing(_ notification: Notification) {
+        guard let field = notification.object as? NSTextField else { return }
+        if field === fontSizeField {
+            field.stringValue = String(format: "%.0f", IdleScreenSettings.shared.messageFontSize)
+        } else if field === liveWindowTextSizeField {
+            field.stringValue = String(format: "%.0f", LiveWindowTextSettings.shared.fontSize)
+        }
+    }
+
+    @objc private func showTimeChanged(_ sender: NSButton) {
+        IdleScreenSettings.shared.updateShowTime(sender.state == .on)
+    }
+
+    @objc private func resetIdleScreenSettings(_ sender: Any) {
         IdleScreenSettings.shared.resetToDefaults()
-        reloadValues()
+        reloadIdleScreenValues()
+    }
+
+    @objc private func showSourceNameChanged(_ sender: NSButton) {
+        LiveWindowTextSettings.shared.updateShowsPresentedSourceName(sender.state == .on)
+        reloadLiveWindowTextMode()
+    }
+
+    @objc private func showCustomTextChanged(_ sender: NSButton) {
+        LiveWindowTextSettings.shared.updateShowsCustomText(sender.state == .on)
+        reloadLiveWindowTextMode()
+    }
+
+    @objc private func positionChanged(_ sender: NSPopUpButton) {
+        guard LiveWindowTextPosition.all.indices.contains(sender.indexOfSelectedItem) else { return }
+        LiveWindowTextSettings.shared.updatePosition(LiveWindowTextPosition.all[sender.indexOfSelectedItem])
+    }
+
+    @objc private func resetLiveWindowTextAppearance(_ sender: Any) {
+        LiveWindowTextSettings.shared.resetTextAppearance()
+        reloadLiveWindowTextAppearance()
     }
 
     private func reloadValues() {
+        reloadIdleScreenValues()
+        let liveSettings = LiveWindowTextSettings.shared
+        customTextField.stringValue = liveSettings.customText
+        reloadLiveWindowTextMode()
+        reloadLiveWindowTextAppearance()
+    }
+
+    private func reloadIdleScreenValues() {
         let settings = IdleScreenSettings.shared
         messageTextView.string = settings.message
         fontSizeField.stringValue = String(format: "%.0f", settings.messageFontSize)
         showTimeButton.state = settings.showTime ? .on : .off
+    }
+
+    private func reloadLiveWindowTextMode() {
+        let settings = LiveWindowTextSettings.shared
+        showSourceNameButton.state = settings.showsPresentedSourceName ? .on : .off
+        showCustomTextButton.state = settings.showsCustomText ? .on : .off
+        customTextField.isEnabled = settings.showsCustomText
+    }
+
+    private func reloadLiveWindowTextAppearance() {
+        let settings = LiveWindowTextSettings.shared
+        positionPopup.selectItem(at: LiveWindowTextPosition.all.firstIndex(of: settings.position) ?? 3)
+        liveWindowTextSizeField.stringValue = String(format: "%.0f", settings.fontSize)
     }
 
 }
@@ -365,4 +610,42 @@ private func settingsDescription(_ text: String) -> NSTextField {
     label.preferredMaxLayoutWidth = 560
     label.widthAnchor.constraint(lessThanOrEqualToConstant: 560).isActive = true
     return label
+}
+
+private func settingsSectionTitle(_ title: String) -> NSTextField {
+    let label = NSTextField(labelWithString: title)
+    label.font = .systemFont(ofSize: 14, weight: .semibold)
+    return label
+}
+
+private func settingsSeparator() -> NSBox {
+    let separator = NSBox()
+    separator.boxType = .separator
+    separator.widthAnchor.constraint(equalToConstant: 576).isActive = true
+    return separator
+}
+
+private func filterNumericInput(in field: NSTextField, allowsDecimalSeparator: Bool) {
+    guard let editor = field.currentEditor() as? NSTextView else { return }
+    let original = editor.string
+    let selection = editor.selectedRange()
+    let prefixEnd = original.index(original.startIndex, offsetBy: min(selection.location, original.count))
+    let prefix = String(original[..<prefixEnd])
+
+    func filteredValue(_ value: String) -> String {
+        var foundDecimalSeparator = false
+        return String(value.filter { character in
+            if character >= "0" && character <= "9" { return true }
+            if allowsDecimalSeparator && character == "." && !foundDecimalSeparator {
+                foundDecimalSeparator = true
+                return true
+            }
+            return false
+        })
+    }
+
+    let filtered = filteredValue(original)
+    guard filtered != original else { return }
+    editor.string = filtered
+    editor.setSelectedRange(NSRange(location: filteredValue(prefix).count, length: 0))
 }

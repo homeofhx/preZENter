@@ -78,7 +78,7 @@ private extension AppDelegate {
     @IBAction func stopPresenting(_ sender: Any) {
         selectedSource = nil
         syncAllGridsToSelection()
-        setupLiveWindow(selectedTitle: nil)
+        setupLiveWindow()
 
         liveWindow?.performTransition { [weak self] in
             guard let self = self, self.selectedSource == nil else { return }
@@ -121,14 +121,14 @@ private extension AppDelegate {
     }
 
     func selectPermittedSource(_ source: ContentSource) {
-        guard catalog.contains(source), let title = catalog.title(for: source) else {
+        guard catalog.contains(source), catalog.title(for: source) != nil else {
             handleSourceLost(source)
             return
         }
 
         selectedSource = source
         syncAllGridsToSelection()
-        setupLiveWindow(selectedTitle: title)
+        setupLiveWindow()
         liveWindow?.performTransition { [weak self] in
             guard let self = self, self.selectedSource == source else { return }
             self.presentationCoordinator?.present(source)
@@ -139,7 +139,7 @@ private extension AppDelegate {
         guard selectedSource == source else { return }
         selectedSource = nil
         syncAllGridsToSelection()
-        setupLiveWindow(selectedTitle: nil)
+        setupLiveWindow()
         liveWindow?.performTransition { [weak self] in
             guard let self = self, self.selectedSource == nil else { return }
             self.presentationCoordinator?.stopAndShowIdle()
@@ -182,7 +182,7 @@ extension AppDelegate {
     }
 
     @objc func menuBarScreenSwitcherHandler(_ sender: NSMenuItem) {
-        setupLiveWindow(selectedTitle: selectedSource.flatMap { catalog.title(for: $0) })
+        setupLiveWindow()
         if let liveWindow = liveWindow?.window { systemSwitcher.moveLiveWindow(liveWindow, toScreenAt: sender.tag) }
     }
 
@@ -205,7 +205,7 @@ private extension AppDelegate {
 
     // MARK: - Presentation UI
 
-    func setupLiveWindow(selectedTitle: String?) {
+    func setupLiveWindow() {
         if liveWindow == nil {
             let newLiveWindow = LiveWindow()
             liveWindow = newLiveWindow
@@ -216,7 +216,9 @@ private extension AppDelegate {
             presentationCoordinator = coordinator
         }
 
-        let title = selectedTitle ?? ""
+        let title = selectedSource.flatMap { catalog.title(for: $0) } ?? ""
+        let liveWindowName = selectedSource.flatMap { catalog.liveWindowName(for: $0) }
+        liveWindow?.setPresentedSourceName(liveWindowName)
         liveContentIndicator.stringValue = title.isEmpty ? "Nothing" : AppDelegate.truncatedContentName(title)
         menuBarShortcuts.updatePresentingIndicator(with: title)
     }
@@ -248,8 +250,20 @@ private extension AppDelegate {
             guard response == .alertFirstButtonReturn,
                   let self = self,
                   let screen = NSScreen.screens.first(where: { $0.displayID == displayID }) else { return }
-            self.setupLiveWindow(selectedTitle: self.selectedSource.flatMap { self.catalog.title(for: $0) })
+            self.setupLiveWindow()
             if let liveWindow = self.liveWindow?.window { self.systemSwitcher.moveLiveWindow(liveWindow, to: screen) }
+        }
+    }
+
+    func handleExternalDisplayConnected(_ displayID: CGDirectDisplayID) {
+        guard let targetScreen = NSScreen.screens.first(where: { $0.displayID == displayID }) else { return }
+        if ApplicationSettings.shared.automaticallyMovesLiveWindow {
+            setupLiveWindow()
+            if let liveWindow = liveWindow?.window {
+                systemSwitcher.moveLiveWindowToFullScreen(liveWindow, to: targetScreen)
+            }
+        } else if ApplicationSettings.shared.promptsForExternalDisplay {
+            promptToMoveLiveWindow(to: displayID)
         }
     }
 
@@ -496,7 +510,7 @@ extension AppDelegate: NSApplicationDelegate {
         reloadContentSources(forceUIRefresh: true)
         startContentAutoRefresh()
         appEnvironmentController.onExternalDisplayConnected = { [weak self] displayID in
-            self?.promptToMoveLiveWindow(to: displayID)
+            self?.handleExternalDisplayConnected(displayID)
         }
         appEnvironmentController.start()
         permissionCoordinator.presentingWindow = window

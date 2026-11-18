@@ -11,7 +11,7 @@ final class PresentationCoordinator {
 
     private var activeSource: ContentSource?
     private var presentationID: UInt64 = 0
-    private var captureSettingsObserver: NSObjectProtocol?
+    private var settingsObservers: [NSObjectProtocol] = []
 
     init(liveWindow: LiveWindow) {
         self.liveWindow = liveWindow
@@ -22,15 +22,21 @@ final class PresentationCoordinator {
         iOSDevicePipeline.onDeviceLost = { [weak self] activation in
             self?.captureDeviceWasLost(activation, kind: .iOSDevice)
         }
-        captureSettingsObserver = NotificationCenter.default.addObserver(forName: .captureSettingsDidChange,
-                                                                         object: ApplicationSettings.shared,
-                                                                         queue: .main) { [weak self] _ in
+        settingsObservers.append(NotificationCenter.default.addObserver(forName: .captureSettingsDidChange,
+                                                                        object: ApplicationSettings.shared,
+                                                                        queue: .main) { [weak self] _ in
             self?.restartDesktopCaptureIfNeeded()
-        }
+        })
+        settingsObservers.append(NotificationCenter.default.addObserver(forName: .audioSettingsDidChange,
+                                                                        object: ApplicationSettings.shared,
+                                                                        queue: .main) { [weak self] _ in
+            self?.applyAudioSettings()
+        })
+        applyAudioSettings()
     }
 
     deinit {
-        if let observer = captureSettingsObserver { NotificationCenter.default.removeObserver(observer) }
+        settingsObservers.forEach { NotificationCenter.default.removeObserver($0) }
     }
 
     func present(_ source: ContentSource) {
@@ -111,6 +117,17 @@ final class PresentationCoordinator {
         case .videoDevice, .iOSDevice:
             break
         }
+    }
+
+    private func applyAudioSettings() {
+        let settings = ApplicationSettings.shared
+        let volume = Float(settings.outputVolume) / 100
+        videoDevicePipeline.updateAudioConfiguration(volume: volume,
+                                                     isMuted: settings.mutesVideoDeviceAudio,
+                                                     usesMonoOutput: settings.usesMonoAudioOutput)
+        iOSDevicePipeline.updateAudioConfiguration(volume: volume,
+                                                   isMuted: settings.mutesIOSDeviceAudio,
+                                                   usesMonoOutput: settings.usesMonoAudioOutput)
     }
 
 }
