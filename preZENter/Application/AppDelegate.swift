@@ -9,6 +9,7 @@ final class AppDelegate: NSObject {
     @IBOutlet private weak var liveContentIndicator: NSTextField!
     @IBOutlet private weak var presentationStatusIndicator: NSButton!
     @IBOutlet private weak var timerText: NSTextField!
+    @IBOutlet private weak var deviceTimeText: NSTextField!
     @IBOutlet private weak var contentChooser: NSTabView!
 
     private var catalog = ContentSourceCatalog()
@@ -31,6 +32,16 @@ final class AppDelegate: NSObject {
     private let permissionCoordinator = PermissionCoordinator()
     private lazy var settingsWindowController = SettingsWindowController()
     private var isTimerRunning = false
+    private var deviceTimeRefreshTimer: Timer?
+
+    private let deviceTimeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.timeZone = .autoupdatingCurrent
+        formatter.dateFormat = "HH:mm:ss"
+        return formatter
+    }()
 
     private var contentAutoRefreshTimer: Timer?
     private static let autoRefreshInterval: TimeInterval = 2.0
@@ -477,6 +488,24 @@ private extension AppDelegate {
 
     // MARK: - Timer
 
+    func setupDeviceClock() {
+        updateDeviceTime()
+        deviceTimeRefreshTimer?.invalidate()
+
+        let now = Date().timeIntervalSinceReferenceDate
+        let nextSecond = Date(timeIntervalSinceReferenceDate: now.rounded(.down) + 1.0)
+        let timer = Timer(fire: nextSecond, interval: 1.0, repeats: true) { [weak self] _ in
+            self?.updateDeviceTime()
+        }
+
+        deviceTimeRefreshTimer = timer
+        RunLoop.current.add(timer, forMode: .common)
+    }
+
+    func updateDeviceTime() {
+        deviceTimeText.stringValue = deviceTimeFormatter.string(from: Date())
+    }
+
     func setupPresenterTimer() {
         presenterTimer.onTick = { [weak self] timeString in
             DispatchQueue.main.async {
@@ -488,7 +517,7 @@ private extension AppDelegate {
 
     func startOrStopPresenterTimer() {
         isTimerRunning.toggle()
-        timerText.font = .systemFont(ofSize: 20.0, weight: isTimerRunning ? .heavy : .light)
+        timerText.font = .systemFont(ofSize: 20.0, weight: isTimerRunning ? .bold : .regular)
         isTimerRunning ? presenterTimer.startTimer() : presenterTimer.pauseTimer()
     }
 
@@ -505,6 +534,7 @@ extension AppDelegate: NSApplicationDelegate {
         updatePresentationStatus(isPresenting: false)
         menuBarShortcuts.menuBarItem.menu?.delegate = self
 
+        setupDeviceClock()
         setupPresenterTimer()
         setupContentGrids()
         reloadContentSources(forceUIRefresh: true)
@@ -535,6 +565,7 @@ extension AppDelegate: NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         contentAutoRefreshTimer?.invalidate()
+        deviceTimeRefreshTimer?.invalidate()
         presenterTimer.pauseTimer()
         appEnvironmentController.stop()
         presentationCoordinator?.shutdown()
